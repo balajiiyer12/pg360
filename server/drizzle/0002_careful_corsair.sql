@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "room_id" varchar NOT NULL;
