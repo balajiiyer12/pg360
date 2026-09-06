@@ -85,7 +85,7 @@ export const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // 4. Set cookie without ANY options parameter
+    // 4. Set cookie 
     return res
       .status(200)
       .cookie("token", token)
