@@ -19,7 +19,7 @@ export const statusEnum = pgEnum('status', ['pending', 'resolved']);
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey().notNull(),
   name: varchar('name', { length: 255 }).notNull(),
-  role: roleEnum('role').default('default').notNull(),
+  role: roleEnum('role').default('admin').notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   password: text('password').notNull(),
   roomId: uuid('room_id').references(() => rooms.roomId, {
