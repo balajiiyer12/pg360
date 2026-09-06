@@ -23,7 +23,7 @@ export const signUp = async (req,res)=>{
         }
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const newUser = await db.insert(users).values({name,email,password:hashedPassword})
+    const [newUser] = await db.insert(users).values({name,email,password:hashedPassword})
     .returning(
         { id: users.id, name: users.name, email: users.email });
     return res.status(201).json({
@@ -106,7 +106,6 @@ export const login = async (req, res) => {
   }
 };
 
-// Simple Logout (Clears the cookie without settings)
 export const logout = (req, res) => {
   res.clearCookie("token");
   return res.status(200).json({
