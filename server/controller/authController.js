@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import {db} from "../db.js"
 import {users} from "../schema/schema.js"
 import { eq } from "drizzle-orm";
+import jwt from "jsonwebtoken";
 
 export const signUp = async (req,res)=>{
     try{
@@ -43,3 +44,73 @@ export const signUp = async (req,res)=>{
         });
   }
 }
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        msg: "Please provide email and password.",
+      });
+    }
+
+    // 1. Find user in database
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email.toLowerCase()));
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        msg: "Invalid email or password.",
+      });
+    }
+
+    // 2. Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        msg: "Invalid email or password.",
+      });
+    }
+
+    // 3. Create JWT token
+    const token = jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET || "default_jwt_secret_key",
+      { expiresIn: "1d" }
+    );
+
+    // 4. Set cookie without ANY options parameter
+    return res
+      .status(200)
+      .cookie("token", token)
+      .json({
+        success: true,
+        msg: "Logged in successfully!",
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
+      });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      msg: error.message,
+    });
+  }
+};
+
+// Simple Logout (Clears the cookie without settings)
+export const logout = (req, res) => {
+  res.clearCookie("token");
+  return res.status(200).json({
+    success: true,
+    msg: "Logged out successfully.",
+  });
+};
