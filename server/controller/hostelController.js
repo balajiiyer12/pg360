@@ -1,7 +1,16 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../db.js"
-import { hostels } from "../schema/schema.js"
+import { hostels} from "../schema/schema.js"
 
+export const getAllHostels = async(req,res)=>{
+    try{
+        const allHostels = await db.select().from(hostels).where(eq(hostels.ownerId,req.user.id));
+        res.status(200).json({success:true,allHostels});
+    }
+    catch(err){
+        res.status(500).json({success:false, message:err.message});
+    }
+}
 export const createHostel = async (req,res)=>{
     try{
         const {name,ownerId,description} = req.body;
