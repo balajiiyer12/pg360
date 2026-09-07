@@ -9,7 +9,7 @@ export const createHostel = async (req,res)=>{
             return res.status(400).json({success:false,message:"Enter all fields"});
         }
 
-        const [existingHostel] = await db.select().from(users).where(
+        const [existingHostel] = await db.select().from(hostels).where(
             and(
             eq(hostels.name,name),
             eq(hostels.ownerId,ownerId)
