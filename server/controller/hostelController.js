@@ -1,7 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../db.js"
 import { hostels } from "../schema/schema.js"
-import bcrypt from "bcrypt";
 
 export const createHostel = async (req,res)=>{
     try{

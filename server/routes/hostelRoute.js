@@ -1,5 +1,5 @@
 import Router from "express";
-import { createHostel, deleteHostel, editHostel } from "../controller/hostelController";
+import { createHostel, deleteHostel, editHostel } from "../controller/hostelController.js";
 
 const router = Router();
 
