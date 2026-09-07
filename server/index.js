@@ -3,10 +3,12 @@ import { pool } from "./db.js";
 import authRouter from "./routes/authRoute.js";
 import { protect } from "./middlewares/authMiddleware.js";
 import { isAdmin } from "./middlewares/isAdmin.js";
+import {isTenant} from "./middlewares/isTenant.js"
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/userRoute.js";
 import hostelRouter from "./routes/hostel_RoomRoute.js";
-import complaintRouter from "./routes/complaintRoute.js"
+import complaintAdminRouter from "./routes/complaintAdminRoute.js";
+import complaintTenantRouter from "./routes/complaintTenantRoute.js";
 
 try {
   const client = await pool.connect();
@@ -21,8 +23,8 @@ try {
   app.use("/api/auth",authRouter);
   app.use("/api/admin/users",protect,isAdmin,userRouter);
   app.use("/api/admin/hostel",protect,isAdmin,hostelRouter);
-  app.use("/api/complaints/admin",protect,isAdmin,complaintRouter);
-  app.use("/api/complaints/tenant",protect,isTenant,complaintRouter);
+  app.use("/api/complaints/admin",protect,isAdmin,complaintAdminRouter);
+  app.use("/api/complaints/tenant",protect,isTenant,complaintTenantRouter);
   app.get('/',protect,(req,res)=>{res.json({msg:"hello"})});
 
   app.listen(3000, () => {
