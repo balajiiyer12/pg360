@@ -34,9 +34,10 @@ export const getAllRoom = async (req, res) => {
 // CREATE ROOM IN A HOSTEL
 export const createRoom = async (req, res) => {
   try {
-    const { roomName, capacity, rent, hostelId } = req.body;
+    const { roomName, capacity, rent } = req.body;
+    const {hostelid}= req.params;
 
-    if (!roomName || !capacity || !rent || !hostelId) {
+    if (!roomName || !capacity || !rent) {
       return res
         .status(400)
         .json({ success: false, message: "Enter all fields" });
@@ -46,7 +47,7 @@ export const createRoom = async (req, res) => {
     const [existingHostel] = await db
       .select()
       .from(hostels)
-      .where(eq(hostels.hostelId, hostelId));
+      .where(eq(hostels.hostelId, hostelid));
 
     if (!existingHostel) {
       return res.status(404).json({
@@ -60,7 +61,7 @@ export const createRoom = async (req, res) => {
       .select()
       .from(rooms)
       .where(
-        and(eq(rooms.roomName, roomName), eq(rooms.hostelId, hostelId))
+        and(eq(rooms.roomName, roomName), eq(rooms.hostelId, hostelid))
       );
 
     if (existingRoom) {
@@ -76,7 +77,7 @@ export const createRoom = async (req, res) => {
         roomName,
         capacity,
         rent,
-        hostelId,
+        hostelId: hostelid
       })
       .returning();
 
