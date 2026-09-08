@@ -36,6 +36,13 @@
       "when": 1788774173241,
       "tag": "0004_black_mystique",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1788897191822,
+      "tag": "0005_sturdy_white_tiger",
+      "breakpoints": true
     }
   ]
 }
