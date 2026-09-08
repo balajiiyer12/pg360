@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import api from "../api/apiClient.js";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 export default function ManageHostels() {
   const navigate = useNavigate();
@@ -17,11 +18,21 @@ export default function ManageHostels() {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchHostels = async () => {
+  const fetchHostels = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const data = await api.get("/admin/hostel");
+
+      const response = await fetch(`${API_BASE_URL}/admin/hostel`, {
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to load hostels");
+      }
+
       if (data?.success) {
         setHostels(data.allHostels || []);
       }
@@ -30,11 +41,11 @@ export default function ManageHostels() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchHostels();
-  }, []);
+  }, [fetchHostels]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,25 +54,40 @@ export default function ManageHostels() {
     setSubmitting(true);
 
     try {
-      if (editingId) {
-        const data = await api.put(`/admin/hostel/${editingId}`, formData);
-        if (data?.success) {
-          setSuccess("Hostel updated successfully!");
-          setEditingId(null);
-          fetchHostels();
-        }
-      } else {
-        const data = await api.post("/admin/hostel", formData);
-        if (data?.success) {
-          setSuccess("Hostel registered successfully!");
-          fetchHostels();
-        }
+      const url = editingId
+        ? `${API_BASE_URL}/admin/hostel/${editingId}`
+        : `${API_BASE_URL}/admin/hostel`;
+
+      const method = editingId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Operation failed. Please try again.");
       }
 
-      setFormData({
-        name: "",
-        description: "",
-      });
+      if (data?.success) {
+        setSuccess(
+          editingId
+            ? "Hostel updated successfully!"
+            : "Hostel registered successfully!"
+        );
+        setEditingId(null);
+        setFormData({
+          name: "",
+          description: "",
+        });
+        fetchHostels();
+      }
     } catch (err) {
       setError(err.message || "Operation failed. Please try again.");
     } finally {
@@ -84,12 +110,26 @@ export default function ManageHostels() {
   };
 
   const handleDelete = async (id) => {
-    const confirmed = window.confirm("Are you sure you want to delete this hostel? All associated rooms and tenant assignments will be impacted.");
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this hostel? All associated rooms and tenant assignments will be impacted."
+    );
     if (!confirmed) return;
 
     try {
       setError("");
-      const data = await api.delete(`/admin/hostel/${id}`);
+      setSuccess("");
+
+      const response = await fetch(`${API_BASE_URL}/admin/hostel/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to delete hostel");
+      }
+
       if (data?.success) {
         setSuccess("Hostel deleted successfully!");
         setHostels((prev) => prev.filter((h) => h.hostelId !== id));
@@ -117,7 +157,7 @@ export default function ManageHostels() {
 
           <button
             onClick={() => navigate("/admin/dashboard")}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900"
+            className="text-sm font-medium text-slate-600 hover:text-slate-900 cursor-pointer"
           >
             ← Back to Dashboard
           </button>
@@ -158,7 +198,7 @@ export default function ManageHostels() {
                 {editingId && (
                   <button
                     onClick={handleCancelEdit}
-                    className="text-xs text-slate-500 hover:text-slate-800 underline"
+                    className="text-xs text-slate-500 hover:text-slate-800 underline cursor-pointer"
                   >
                     Cancel Edit
                   </button>
@@ -257,7 +297,7 @@ export default function ManageHostels() {
                             {hostel.name}
                           </h3>
                           <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-1 rounded">
-                            Hostel ID: {hostel.hostelId.slice(0, 8)}...
+                            Hostel ID: {hostel.hostelId?.slice(0, 8)}...
                           </span>
                         </div>
 

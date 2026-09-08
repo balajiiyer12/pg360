@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import api from "../api/apiClient.js";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 export default function HostelDetailsPage() {
   const { id } = useParams();
@@ -39,14 +40,22 @@ export default function HostelDetailsPage() {
       setError("");
 
       const [hostelRes, roomsRes, tenantsRes] = await Promise.all([
-        api.get(`/admin/hostel/${id}`),
-        api.get(`/admin/hostel/${id}/room`),
-        api.get(`/admin/users/hostel/${id}`),
+        fetch(`${API_BASE_URL}/admin/hostel/${id}`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/admin/hostel/${id}/room`, { credentials: "include" }),
+        fetch(`${API_BASE_URL}/admin/users/hostel/${id}`, { credentials: "include" }),
       ]);
 
-      if (hostelRes?.success) setHostel(hostelRes.hostel);
-      if (roomsRes?.success) setRooms(roomsRes.allRooms || []);
-      if (tenantsRes?.success) setUsers(tenantsRes.tenants || []);
+      const hostelData = await hostelRes.json();
+      const roomsData = await roomsRes.json();
+      const tenantsData = await tenantsRes.json();
+
+      if (!hostelRes.ok) throw new Error(hostelData?.message || hostelData?.msg || "Failed to load hostel data");
+      if (!roomsRes.ok) throw new Error(roomsData?.message || roomsData?.msg || "Failed to load rooms data");
+      if (!tenantsRes.ok) throw new Error(tenantsData?.message || tenantsData?.msg || "Failed to load tenants data");
+
+      if (hostelData?.success) setHostel(hostelData.hostel);
+      if (roomsData?.success) setRooms(roomsData.allRooms || []);
+      if (tenantsData?.success) setUsers(tenantsData.tenants || []);
     } catch (err) {
       setError(err.message || "Failed to load hostel data");
     } finally {
@@ -82,14 +91,28 @@ export default function HostelDetailsPage() {
         rent: Number(roomForm.rent),
       };
 
-      if (editingRoom) {
-        await api.put(`/admin/hostel/rooms/${editingRoom.roomId}`, payload);
-        setSuccess("Room updated successfully!");
-      } else {
-        await api.post(`/admin/hostel/${id}/room`, payload);
-        setSuccess("Room added successfully!");
+      const url = editingRoom
+        ? `${API_BASE_URL}/admin/hostel/rooms/${editingRoom.roomId}`
+        : `${API_BASE_URL}/admin/hostel/${id}/room`;
+
+      const method = editingRoom ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to save room");
       }
 
+      setSuccess(editingRoom ? "Room updated successfully!" : "Room added successfully!");
       setRoomForm({ roomName: "", capacity: "", rent: "" });
       setEditingRoom(null);
       setRoomModal(false);
@@ -117,7 +140,17 @@ export default function HostelDetailsPage() {
 
     try {
       setError("");
-      await api.delete(`/admin/hostel/rooms/${roomId}`);
+      const response = await fetch(`${API_BASE_URL}/admin/hostel/rooms/${roomId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to delete room");
+      }
+
       setSuccess("Room deleted successfully!");
       fetchAllData();
     } catch (err) {
@@ -143,19 +176,34 @@ export default function HostelDetailsPage() {
         payload.password = userForm.password;
       }
 
-      if (editingUser) {
-        await api.put(`/admin/users/${editingUser.id}`, payload);
-        setSuccess("Tenant updated successfully!");
-      } else {
-        if (!userForm.password) {
-          setError("Password is required for new tenant account");
-          setSubmitting(false);
-          return;
-        }
-        await api.post(`/admin/users`, payload);
-        setSuccess("Tenant created and assigned successfully!");
+      if (!editingUser && !userForm.password) {
+        setError("Password is required for new tenant account");
+        setSubmitting(false);
+        return;
       }
 
+      const url = editingUser
+        ? `${API_BASE_URL}/admin/users/${editingUser.id}`
+        : `${API_BASE_URL}/admin/users`;
+
+      const method = editingUser ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to save tenant");
+      }
+
+      setSuccess(editingUser ? "Tenant updated successfully!" : "Tenant created and assigned successfully!");
       setUserForm({ name: "", email: "", password: "", roomId: "" });
       setEditingUser(null);
       setUserModal(false);
@@ -184,7 +232,17 @@ export default function HostelDetailsPage() {
 
     try {
       setError("");
-      await api.delete(`/admin/users/${userId}`);
+      const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to delete tenant");
+      }
+
       setSuccess("Tenant removed successfully!");
       fetchAllData();
     } catch (err) {

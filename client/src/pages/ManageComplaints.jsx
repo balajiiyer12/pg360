@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import api from "../api/apiClient.js";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 export default function ManageComplaints() {
   const navigate = useNavigate();
@@ -11,11 +12,21 @@ export default function ManageComplaints() {
   const [success, setSuccess] = useState("");
   const [filter, setFilter] = useState("all"); // 'all', 'pending', 'resolved'
 
-  const fetchComplaints = async () => {
+  const fetchComplaints = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
-      const data = await api.get("/complaints/admin");
+
+      const response = await fetch(`${API_BASE_URL}/complaints/admin`, {
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to load complaints");
+      }
+
       if (data?.success) {
         setComplaints(data.allComplaints || []);
       }
@@ -24,19 +35,32 @@ export default function ManageComplaints() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchComplaints();
-  }, []);
+  }, [fetchComplaints]);
 
   const updateStatus = async (complaintId, newStatus) => {
     try {
       setError("");
       setSuccess("");
-      const data = await api.patch(`/complaints/admin/${complaintId}`, {
-        status: newStatus,
+
+      const response = await fetch(`${API_BASE_URL}/complaints/admin/${complaintId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to update complaint status");
+      }
+
       if (data?.success) {
         setSuccess(`Complaint marked as ${newStatus}!`);
         setComplaints((prev) =>
@@ -57,7 +81,18 @@ export default function ManageComplaints() {
     try {
       setError("");
       setSuccess("");
-      const data = await api.delete(`/complaints/admin/${complaintId}`);
+
+      const response = await fetch(`${API_BASE_URL}/complaints/admin/${complaintId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to delete complaint");
+      }
+
       if (data?.success) {
         setSuccess("Complaint deleted successfully!");
         setComplaints((prev) => prev.filter((c) => c.complaintId !== complaintId));

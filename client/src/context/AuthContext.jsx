@@ -1,15 +1,31 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import api from "../api/apiClient.js";
 
 const AuthContext = createContext(null);
+
+// Environment variable se Base URL (default localhost)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // User auth status check karne ke liye helper function
   const checkAuth = async () => {
     try {
-      const data = await api.get("/auth/me");
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        setUser(null);
+        return;
+      }
+
+      const data = await response.json();
       if (data?.success && data?.user) {
         setUser(data.user);
       } else {
@@ -26,34 +42,89 @@ export function AuthProvider({ children }) {
     checkAuth();
   }, []);
 
+  // Login Function
   const login = async (email, password) => {
-    const data = await api.post("/auth/login", { email, password });
-    if (data?.user) {
-      setUser(data.user);
-      // Also fetch full user details including room if tenant
-      try {
-        const fullData = await api.get("/auth/me");
-        if (fullData?.user) {
-          setUser(fullData.user);
-          return fullData.user;
-        }
-      } catch {
-        // ignore and return basic user
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Login failed");
       }
-      return data.user;
+
+      const data = await response.json();
+
+      if (data?.user) {
+        setUser(data.user);
+
+        // Extra details (/auth/me) fetch karne ke liye retry
+        try {
+          const fullRes = await fetch(`${API_BASE_URL}/auth/me`, {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (fullRes.ok) {
+            const fullData = await fullRes.json();
+            if (fullData?.user) {
+              setUser(fullData.user);
+              return fullData.user;
+            }
+          }
+        } catch {
+          // Extra fetch fail hone par basic user return karega
+        }
+
+        return data.user;
+      }
+      return null;
+    } catch (error) {
+      throw error;
     }
-    return null;
   };
 
+  // Signup Function
   const signup = async (name, email, password) => {
-    return await api.post("/auth/signup", { name, email, password });
+    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = data?.message || data?.msg || "Signup failed";
+      throw new Error(errorMessage);
+    }
+
+    return data;
   };
 
+  // Logout Function
   const logout = async () => {
     try {
-      await api.get("/auth/logout");
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
     } catch {
-      // ignore
+      // Ignore network errors on logout
     } finally {
       setUser(null);
     }

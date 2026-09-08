@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import api from "../api/apiClient.js";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -22,7 +23,20 @@ export default function AdminDashboard() {
     async function fetchDashboardStats() {
       try {
         setLoading(true);
-        const data = await api.get("/admin/hostel/stats/overview");
+        const response = await fetch(`${API_BASE_URL}/admin/hostel/stats/overview`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.message || data?.msg || "Failed to load dashboard data");
+        }
+
         if (data?.success) {
           setStats(data.stats);
           setRecentActivity(data.recentActivity || []);

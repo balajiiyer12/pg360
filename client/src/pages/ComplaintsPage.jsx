@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import api from "../api/apiClient.js";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 export default function ComplaintsPage() {
   const navigate = useNavigate();
@@ -22,7 +23,20 @@ export default function ComplaintsPage() {
     try {
       setLoading(true);
       setError("");
-      const data = await api.get("/complaints/tenant");
+      const response = await fetch(`${API_BASE_URL}/complaints/tenant`, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to load complaints");
+      }
+
       if (data?.success) {
         setComplaints(data.myComplaints || []);
       }
@@ -49,10 +63,23 @@ export default function ComplaintsPage() {
 
     setSubmitting(true);
     try {
-      const data = await api.post("/complaints/tenant", {
-        title: formData.title.trim(),
-        description: formData.description.trim(),
+      const response = await fetch(`${API_BASE_URL}/complaints/tenant`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+        }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to submit complaint. Please check if you are assigned to a room.");
+      }
 
       if (data?.success) {
         setSuccess("Complaint submitted successfully! Your PG admin has been notified.");
@@ -73,7 +100,20 @@ export default function ComplaintsPage() {
     try {
       setError("");
       setSuccess("");
-      const data = await api.delete(`/complaints/tenant/${complaintId}`);
+      const response = await fetch(`${API_BASE_URL}/complaints/tenant/${complaintId}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.message || data?.msg || "Failed to delete complaint");
+      }
+
       if (data?.success) {
         setSuccess("Complaint removed successfully.");
         setComplaints((prev) => prev.filter((c) => c.complaintId !== complaintId));
