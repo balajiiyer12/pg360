@@ -9,6 +9,7 @@ import userRouter from "./routes/userRoute.js";
 import hostelRouter from "./routes/hostel_RoomRoute.js";
 import complaintAdminRouter from "./routes/complaintAdminRoute.js";
 import complaintTenantRouter from "./routes/complaintTenantRoute.js";
+import paymentRouter from "./routes/paymentRouter.js";
 
 try {
   const client = await pool.connect();
@@ -25,7 +26,7 @@ try {
   app.use("/api/admin/hostel",protect,isAdmin,hostelRouter);
   app.use("/api/complaints/admin",protect,isAdmin,complaintAdminRouter);
   app.use("/api/complaints/tenant",protect,isTenant,complaintTenantRouter);
-  app.get('/',protect,(req,res)=>{res.json({msg:"hello"})});
+  app.use("/api/tenant/payment",protect,isTenant,paymentRouter);
 
   app.listen(3000, () => {
     console.log("Server started");
