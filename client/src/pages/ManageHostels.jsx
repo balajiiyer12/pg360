@@ -1,111 +1,175 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../api/apiClient.js";
 
 export default function ManageHostels() {
   const navigate = useNavigate();
 
-  const [hostels, setHostels] = useState([
-    {
-      id: 1,
-      name: "Sunrise PG",
-      description: "Premium accommodation near IT Park.",
-    },
-    {
-      id: 2,
-      name: "Green Valley PG",
-      description: "Comfortable PG for students and working professionals.",
-    },
-  ]);
+  const [hostels, setHostels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const [editingId, setEditingId] = useState(null);
-
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (editingId) {
-      setHostels(
-        hostels.map((hostel) =>
-          hostel.id === editingId
-            ? { ...hostel, ...formData }
-            : hostel
-        )
-      );
-
-      setEditingId(null);
-    } else {
-      const newHostel = {
-        id: Date.now(),
-        ...formData,
-      };
-
-      setHostels((prev) => [...prev, newHostel]);
+  const fetchHostels = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const data = await api.get("/admin/hostel");
+      if (data?.success) {
+        setHostels(data.allHostels || []);
+      }
+    } catch (err) {
+      setError(err.message || "Failed to load hostels");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setFormData({
-      name: "",
-      description: "",
-    });
+  useEffect(() => {
+    fetchHostels();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setSubmitting(true);
+
+    try {
+      if (editingId) {
+        const data = await api.put(`/admin/hostel/${editingId}`, formData);
+        if (data?.success) {
+          setSuccess("Hostel updated successfully!");
+          setEditingId(null);
+          fetchHostels();
+        }
+      } else {
+        const data = await api.post("/admin/hostel", formData);
+        if (data?.success) {
+          setSuccess("Hostel registered successfully!");
+          fetchHostels();
+        }
+      }
+
+      setFormData({
+        name: "",
+        description: "",
+      });
+    } catch (err) {
+      setError(err.message || "Operation failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleEdit = (hostel) => {
-    setEditingId(hostel.id);
-
+    setEditingId(hostel.hostelId);
     setFormData({
       name: hostel.name,
       description: hostel.description,
     });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = (id) => {
-    const confirmed = window.confirm(
-      "Delete this hostel?"
-    );
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setFormData({ name: "", description: "" });
+  };
 
-    if (confirmed) {
-      setHostels((prev) =>
-        prev.filter((hostel) => hostel.id !== id)
-      );
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("Are you sure you want to delete this hostel? All associated rooms and tenant assignments will be impacted.");
+    if (!confirmed) return;
+
+    try {
+      setError("");
+      const data = await api.delete(`/admin/hostel/${id}`);
+      if (data?.success) {
+        setSuccess("Hostel deleted successfully!");
+        setHostels((prev) => prev.filter((h) => h.hostelId !== id));
+      }
+    } catch (err) {
+      setError(err.message || "Failed to delete hostel");
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Top Navbar */}
+      <nav className="bg-white border-b sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-6">
+            <Link to="/admin/dashboard" className="text-2xl font-bold">
+              PG360
+            </Link>
+            <div className="hidden md:flex items-center gap-4 text-sm font-medium text-slate-600">
+              <Link to="/admin/dashboard" className="hover:text-slate-900">Dashboard</Link>
+              <Link to="/admin/hostels" className="text-slate-900 font-semibold">Hostels</Link>
+              <Link to="/admin/complaints" className="hover:text-slate-900">Complaints</Link>
+            </div>
+          </div>
+
+          <button
+            onClick={() => navigate("/admin/dashboard")}
+            className="text-sm font-medium text-slate-600 hover:text-slate-900"
+          >
+            ← Back to Dashboard
+          </button>
+        </div>
+      </nav>
+
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
-        <div className="mb-10">
+        <div className="mb-8">
           <h1 className="text-3xl font-semibold">
             Manage Hostels
           </h1>
-
           <p className="text-slate-500 mt-2">
-            Create, update and manage your hostels.
+            Create, update and manage your PG and hostel properties.
           </p>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm">
+            {success}
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Form */}
           <div>
-            <div className="bg-white border rounded-2xl p-6">
-              <h2 className="text-lg font-medium mb-6">
-                {editingId
-                  ? "Edit Hostel"
-                  : "Register Hostel"}
-              </h2>
+            <div className="bg-white border rounded-2xl p-6 shadow-sm sticky top-24">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold">
+                  {editingId ? "Edit Hostel" : "Register Hostel"}
+                </h2>
+                {editingId && (
+                  <button
+                    onClick={handleCancelEdit}
+                    className="text-xs text-slate-500 hover:text-slate-800 underline"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
+              </div>
 
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-4"
-              >
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm mb-2">
+                  <label className="block text-sm font-medium mb-2">
                     Hostel Name
                   </label>
-
                   <input
                     type="text"
                     required
@@ -116,16 +180,15 @@ export default function ManageHostels() {
                         name: e.target.value,
                       })
                     }
-                    placeholder="Sunrise PG"
-                    className="w-full border rounded-lg px-4 py-3 outline-none focus:border-slate-400"
+                    placeholder="e.g. Sunrise Luxury PG"
+                    className="w-full border rounded-lg px-4 py-3 outline-none focus:border-slate-900 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm mb-2">
+                  <label className="block text-sm font-medium mb-2">
                     Description
                   </label>
-
                   <textarea
                     required
                     rows={4}
@@ -136,16 +199,19 @@ export default function ManageHostels() {
                         description: e.target.value,
                       })
                     }
-                    placeholder="Short hostel description..."
-                    className="w-full border rounded-lg px-4 py-3 resize-none outline-none focus:border-slate-400"
+                    placeholder="Short description, amenities, nearby landmarks..."
+                    className="w-full border rounded-lg px-4 py-3 resize-none outline-none focus:border-slate-900 transition"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-slate-900 text-white rounded-lg py-3"
+                  disabled={submitting}
+                  className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-lg py-3 font-medium transition cursor-pointer"
                 >
-                  {editingId
+                  {submitting
+                    ? "Saving..."
+                    : editingId
                     ? "Update Hostel"
                     : "Register Hostel"}
                 </button>
@@ -155,67 +221,71 @@ export default function ManageHostels() {
 
           {/* Hostel List */}
           <div className="lg:col-span-2">
-            <div className="bg-white border rounded-2xl p-6">
-              <h2 className="text-lg font-medium mb-6">
-                Your Hostels
-              </h2>
+            <div className="bg-white border rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold">
+                  Your Hostels
+                </h2>
+                <span className="text-sm text-slate-500 font-medium">
+                  {hostels.length} {hostels.length === 1 ? "Hostel" : "Hostels"}
+                </span>
+              </div>
 
-              {hostels.length === 0 ? (
-                <div className="text-center py-12 text-slate-500">
-                  No hostels found.
+              {loading ? (
+                <div className="text-center py-16 text-slate-500">
+                  <div className="w-8 h-8 border-4 border-slate-900 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                  Loading hostels...
+                </div>
+              ) : hostels.length === 0 ? (
+                <div className="text-center py-16 text-slate-500 border-2 border-dashed rounded-xl">
+                  <p className="font-medium text-slate-700">No hostels registered yet.</p>
+                  <p className="text-sm text-slate-400 mt-1">Use the form on the left to add your first hostel property.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {hostels.map((hostel) => (
                     <div
-                      key={hostel.id}
-                      className="border rounded-xl p-5"
+                      key={hostel.hostelId}
+                      className="border rounded-xl p-5 hover:border-slate-300 transition bg-white"
                     >
                       <div
-                        onClick={() =>
-                          navigate(
-                            `/admin/hostels/${hostel.id}`
-                          )
-                        }
-                        className="cursor-pointer"
+                        onClick={() => navigate(`/admin/hostels/${hostel.hostelId}`)}
+                        className="cursor-pointer group"
                       >
-                        <h3 className="font-medium text-lg">
-                          {hostel.name}
-                        </h3>
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-lg text-slate-900 group-hover:text-slate-700">
+                            {hostel.name}
+                          </h3>
+                          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                            Hostel ID: {hostel.hostelId.slice(0, 8)}...
+                          </span>
+                        </div>
 
-                        <p className="text-slate-500 mt-2">
+                        <p className="text-slate-600 mt-2 text-sm leading-relaxed">
                           {hostel.description}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-3 mt-5">
+                      <div className="flex items-center gap-3 mt-5 pt-4 border-t">
                         <button
-                          onClick={() =>
-                            handleEdit(hostel)
-                          }
-                          className="border rounded-lg px-4 py-2 text-sm"
+                          onClick={() => handleEdit(hostel)}
+                          className="border rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50 transition cursor-pointer"
                         >
-                          Edit
+                          Edit Details
                         </button>
 
                         <button
-                          onClick={() =>
-                            handleDelete(hostel.id)
-                          }
-                          className="text-sm text-red-500"
+                          onClick={() => handleDelete(hostel.hostelId)}
+                          className="text-sm text-red-600 hover:text-red-700 font-medium px-2 py-1 transition cursor-pointer"
                         >
                           Delete
                         </button>
 
                         <button
-                          onClick={() =>
-                            navigate(
-                              `/admin/hostels/${hostel.id}`
-                            )
-                          }
-                          className="ml-auto text-sm text-slate-500"
+                          onClick={() => navigate(`/admin/hostels/${hostel.hostelId}`)}
+                          className="ml-auto text-sm font-medium text-slate-900 hover:underline flex items-center gap-1 cursor-pointer"
                         >
-                          View →
+                          Manage Rooms & Tenants →
                         </button>
                       </div>
                     </div>

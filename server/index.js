@@ -4,6 +4,7 @@ import authRouter from "./routes/authRoute.js";
 import { protect } from "./middlewares/authMiddleware.js";
 import { isAdmin } from "./middlewares/isAdmin.js";
 import {isTenant} from "./middlewares/isTenant.js"
+import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/userRoute.js";
 import hostelRouter from "./routes/hostel_RoomRoute.js";
@@ -17,6 +18,12 @@ try {
 
   const app = express();
 
+  app.use(
+    cors({
+      origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+      credentials: true,
+    })
+  );
   app.use(cookieParser());
   app.use(express.json());
 

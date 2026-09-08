@@ -21,6 +21,9 @@ export const users = pgTable('users', {
   role: roleEnum('role').default('admin').notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   password: text('password').notNull(),
+  hostelId: uuid('hostel_id').references(() => hostels.hostelId, {
+    onDelete: 'cascade',
+  }),
   roomId: uuid('room_id').references(() => rooms.roomId, {
     onDelete: 'set null',
   }),

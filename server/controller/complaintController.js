@@ -1,66 +1,104 @@
-import { complaints, hostels,users,rooms } from "../schema/schema.js";
+import { complaints, hostels, users, rooms } from "../schema/schema.js";
 import { db } from "../db.js";
-import { and,eq } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 
-export const viewHostelComplaints = async (req,res)=>{
-    try{
-         const {hostelid} = req.params;
-         const [existingHostel] = await db.select().from(hostels).where(and(
-            eq(hostels.hostelId,hostelid),
-            eq(hostels.ownerId,req.user.id)));
+export const getAllAdminComplaints = async (req, res) => {
+  try {
+    const allComplaints = await db
+      .select({
+        complaintId: complaints.complaintId,
+        title: complaints.title,
+        description: complaints.description,
+        status: complaints.status,
+        createdAt: complaints.createdAt,
+        hostelId: complaints.hostelId,
+        hostelName: hostels.name,
+        tenantName: users.name,
+        tenantEmail: users.email,
+        roomName: rooms.roomName,
+      })
+      .from(complaints)
+      .innerJoin(hostels, eq(complaints.hostelId, hostels.hostelId))
+      .innerJoin(users, eq(complaints.authorId, users.id))
+      .leftJoin(rooms, eq(users.roomId, rooms.roomId))
+      .where(eq(hostels.ownerId, req.user.id))
+      .orderBy(desc(complaints.createdAt));
 
-         if(!existingHostel){
-            return res.status(404).json({success:false, message:"NO HOSTEL FOUND"});
-         }
-         const allComplaints = await db
-        .select({
-            complaintId: complaints.complaintId,
-            title: complaints.title,
-            description: complaints.description,
-            status: complaints.status,
-            createdAt: complaints.createdAt,
-            tenantName: users.name,
-            tenantEmail: users.email,
-        }).from(complaints)
-        .innerJoin(
-            users,
-            eq(complaints.authorId, users.id)
-        ).where(eq(complaints.hostelId, hostelid));
+    return res.status(200).json({ success: true, allComplaints });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
 
-        return res.status(200).json({success:true, allComplaints});
+export const viewHostelComplaints = async (req, res) => {
+  try {
+    const { hostelid } = req.params;
+    const [existingHostel] = await db
+      .select()
+      .from(hostels)
+      .where(
+        and(
+          eq(hostels.hostelId, hostelid),
+          eq(hostels.ownerId, req.user.id)
+        )
+      );
+
+    if (!existingHostel) {
+      return res.status(404).json({ success: false, message: "NO HOSTEL FOUND" });
     }
-    catch(err){
-        return res.status(500).json({success:false ,message:err.message});
-    }
-}
 
-export const deleteComplaints = async (req,res)=>{
-   try{
-        const {complaintid} = req.params;
-        const [existingComplaint] = await db
-        .select()
-        .from(complaints)
-        .innerJoin(
+    const allComplaints = await db
+      .select({
+        complaintId: complaints.complaintId,
+        title: complaints.title,
+        description: complaints.description,
+        status: complaints.status,
+        createdAt: complaints.createdAt,
+        hostelId: complaints.hostelId,
+        hostelName: hostels.name,
+        tenantName: users.name,
+        tenantEmail: users.email,
+        roomName: rooms.roomName,
+      })
+      .from(complaints)
+      .innerJoin(hostels, eq(complaints.hostelId, hostels.hostelId))
+      .innerJoin(users, eq(complaints.authorId, users.id))
+      .leftJoin(rooms, eq(users.roomId, rooms.roomId))
+      .where(eq(complaints.hostelId, hostelid))
+      .orderBy(desc(complaints.createdAt));
+
+    return res.status(200).json({ success: true, allComplaints });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const deleteComplaints = async (req, res) => {
+  try {
+    const { complaintid } = req.params;
+    const [existingComplaint] = await db
+      .select()
+      .from(complaints)
+      .innerJoin(
         hostels,
         eq(complaints.hostelId, hostels.hostelId)
-        )
-        .where(
+      )
+      .where(
         and(
-        eq(complaints.complaintId, complaintid),
-        eq(hostels.ownerId, req.user.id)
+          eq(complaints.complaintId, complaintid),
+          eq(hostels.ownerId, req.user.id)
         )
-        );
-        if(!existingComplaint){
-            return res.status(404).json({success:false,message:"NO SUCH COMPLAINT EXISTS"});
-        }
+      );
+    if (!existingComplaint) {
+      return res.status(404).json({ success: false, message: "NO SUCH COMPLAINT EXISTS" });
+    }
 
-        await db.delete(complaints).where(eq(complaints.complaintId,complaintid));
-        return res.status(200).json({success:true,message:"Deleted Sucessfully"});
-    }
-    catch(err){
-        return res.status(500).json({success:false,message:err.message});
-    }
-}
+    await db.delete(complaints).where(eq(complaints.complaintId, complaintid));
+    return res.status(200).json({ success: true, message: "Deleted Successfully" });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
 
 
 export const updateComplaintStatus = async (req, res) => {
@@ -188,6 +226,39 @@ export const createComplaint = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+export const deleteTenantComplaint = async (req, res) => {
+  try {
+    const { complaintid } = req.params;
+    const [existingComplaint] = await db
+      .select()
+      .from(complaints)
+      .where(
+        and(
+          eq(complaints.complaintId, complaintid),
+          eq(complaints.authorId, req.user.id)
+        )
+      );
+
+    if (!existingComplaint) {
+      return res.status(404).json({
+        success: false,
+        message: "Complaint not found",
+      });
+    }
+
+    await db.delete(complaints).where(eq(complaints.complaintId, complaintid));
+    return res.status(200).json({
+      success: true,
+      message: "Complaint deleted successfully",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
     });
   }
 };

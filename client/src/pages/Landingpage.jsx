@@ -1,29 +1,42 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function PG360LandingPage() {
+  const { isAuthenticated, role } = useAuth();
+  const dashboardLink = role === "admin" ? "/admin/dashboard" : "/tenant/dashboard";
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* Navbar */}
-      <nav className="border-b bg-white">
+      <nav className="border-b bg-white sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">
+          <Link to="/" className="text-2xl font-bold">
             PG360
-          </h1>
+          </Link>
 
-          <div className="hidden md:flex items-center gap-8 text-sm">
-            <Link to="/">Features</Link>
-            <Link to="/">Solutions</Link>
-            <Link to="/">Pricing</Link>
-            <Link to="/">Contact</Link>
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+            <a href="#features" className="hover:text-slate-900">Features</a>
+            <a href="#stats" className="hover:text-slate-900">Overview</a>
           </div>
 
           <div className="flex gap-3">
-            <Link to="/login" className="px-4 py-2 border rounded-md">
-              Login
-            </Link>
-            <Link to="/signup" className="px-4 py-2 bg-slate-900 text-white rounded-md">
-              Sign Up
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                to={dashboardLink}
+                className="px-4 py-2 bg-slate-900 text-white rounded-md text-sm font-medium hover:bg-slate-800 transition"
+              >
+                Go to Dashboard →
+              </Link>
+            ) : (
+              <>
+                <Link to="/login" className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-slate-50 transition">
+                  Login
+                </Link>
+                <Link to="/signup" className="px-4 py-2 bg-slate-900 text-white rounded-md text-sm font-medium hover:bg-slate-800 transition">
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -32,7 +45,7 @@ export default function PG360LandingPage() {
       <section className="max-w-6xl mx-auto px-6 py-24">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
-            <span className="text-sm font-medium text-slate-600">
+            <span className="text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
               PG Management Simplified
             </span>
 
@@ -42,15 +55,26 @@ export default function PG360LandingPage() {
               From One Dashboard
             </h1>
 
-            <p className="mt-6 text-lg text-slate-600">
+            <p className="mt-6 text-lg text-slate-600 leading-relaxed">
               Track tenants, collect rent, monitor occupancy,
               manage complaints, and streamline operations with PG360.
             </p>
 
             <div className="mt-8 flex gap-4">
-              <button className="px-6 py-3 bg-slate-900 text-white rounded-md">
-                Get Started
-              </button>
+              <Link
+                to={isAuthenticated ? dashboardLink : "/signup"}
+                className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-md font-medium transition cursor-pointer"
+              >
+                {isAuthenticated ? "Go to Dashboard →" : "Get Started Free"}
+              </Link>
+              {!isAuthenticated && (
+                <Link
+                  to="/login"
+                  className="px-6 py-3 border border-slate-300 hover:bg-slate-50 text-slate-800 rounded-md font-medium transition cursor-pointer"
+                >
+                  Sign In
+                </Link>
+              )}
             </div>
           </div>
 

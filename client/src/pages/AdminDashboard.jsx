@@ -1,36 +1,65 @@
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import api from "../api/apiClient.js";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const admin = {
-    name: "Balaji Iyer",
-    email: "admin@pg360.com",
-    role: "Admin",
-  };
+  const [stats, setStats] = useState({
+    hostels: 0,
+    rooms: 0,
+    tenants: 0,
+    complaints: 0,
+    occupancy: "0%",
+  });
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const analytics = {
-    hostels: 12,
-    tenants: 284,
-    complaints: 17,
-    occupancy: "91%",
-  };
+  useEffect(() => {
+    async function fetchDashboardStats() {
+      try {
+        setLoading(true);
+        const data = await api.get("/admin/hostel/stats/overview");
+        if (data?.success) {
+          setStats(data.stats);
+          setRecentActivity(data.recentActivity || []);
+        }
+      } catch (err) {
+        setError(err.message || "Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+    fetchDashboardStats();
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
     navigate("/login");
   };
 
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Navbar */}
-      <nav className="bg-white border-b">
+      <nav className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">PG360 Admin</h1>
+          <div className="flex items-center gap-6">
+            <Link to="/admin/dashboard" className="text-2xl font-bold">
+              PG360 <span className="text-xs uppercase bg-slate-100 text-slate-700 px-2 py-1 rounded font-semibold ml-2">Admin</span>
+            </Link>
+            <div className="hidden md:flex items-center gap-4 text-sm font-medium text-slate-600">
+              <Link to="/admin/hostels" className="hover:text-slate-900">Hostels</Link>
+              <Link to="/admin/complaints" className="hover:text-slate-900">Complaints</Link>
+            </div>
+          </div>
 
           <button
             onClick={handleLogout}
-            className="px-4 py-2 border rounded-lg text-red-600 border-red-200"
+            className="px-4 py-2 border rounded-lg text-red-600 border-red-200 hover:bg-red-50 text-sm font-medium transition cursor-pointer"
           >
             Logout
           </button>
@@ -41,123 +70,145 @@ export default function AdminDashboard() {
         {/* Welcome */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold">
-            Welcome, {admin.name}
+            Welcome, {user?.name || "Admin"}
           </h2>
           <p className="text-slate-500 mt-2">
             Manage hostels, tenants, complaints and monitor platform activity.
           </p>
         </div>
 
+        {error && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Analytics */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white border rounded-xl p-6">
-            <p className="text-sm text-slate-500">Total Hostels</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white border rounded-xl p-6 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Total Hostels</p>
             <h3 className="text-3xl font-bold mt-2">
-              {analytics.hostels}
+              {loading ? "..." : stats.hostels}
             </h3>
           </div>
 
-          <div className="bg-white border rounded-xl p-6">
-            <p className="text-sm text-slate-500">Total Tenants</p>
+          <div className="bg-white border rounded-xl p-6 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Total Tenants</p>
             <h3 className="text-3xl font-bold mt-2">
-              {analytics.tenants}
+              {loading ? "..." : stats.tenants}
             </h3>
           </div>
 
-          <div className="bg-white border rounded-xl p-6">
-            <p className="text-sm text-slate-500">Open Complaints</p>
-            <h3 className="text-3xl font-bold mt-2">
-              {analytics.complaints}
+          <div className="bg-white border rounded-xl p-6 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Open Complaints</p>
+            <h3 className="text-3xl font-bold mt-2 text-amber-600">
+              {loading ? "..." : stats.complaints}
             </h3>
           </div>
 
-          <div className="bg-white border rounded-xl p-6">
-            <p className="text-sm text-slate-500">Occupancy</p>
-            <h3 className="text-3xl font-bold mt-2">
-              {analytics.occupancy}
+          <div className="bg-white border rounded-xl p-6 shadow-sm">
+            <p className="text-sm font-medium text-slate-500">Occupancy</p>
+            <h3 className="text-3xl font-bold mt-2 text-emerald-600">
+              {loading ? "..." : stats.occupancy}
             </h3>
           </div>
         </div>
 
         {/* Admin Profile */}
-        <div className="bg-white border rounded-xl p-6 mb-8">
+        <div className="bg-white border rounded-xl p-6 mb-8 shadow-sm">
           <h3 className="text-xl font-semibold mb-4">
-            Profile
+            Admin Profile
           </h3>
 
-          <div className="space-y-2">
-            <p>
-              <strong>Name:</strong> {admin.name}
-            </p>
+          <div className="grid md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <span className="text-slate-500 block">Name</span>
+              <span className="font-semibold text-slate-900 text-base">{user?.name}</span>
+            </div>
 
-            <p>
-              <strong>Email:</strong> {admin.email}
-            </p>
+            <div>
+              <span className="text-slate-500 block">Email</span>
+              <span className="font-semibold text-slate-900 text-base">{user?.email}</span>
+            </div>
 
-            <p>
-              <strong>Role:</strong> {admin.role}
-            </p>
+            <div>
+              <span className="text-slate-500 block">Account Role</span>
+              <span className="inline-block mt-1 uppercase text-xs tracking-wider px-2.5 py-0.5 rounded-full font-bold bg-slate-900 text-white">
+                {user?.role}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Management Sections */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Complaints */}
-          <div className="bg-white border rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-3">
-              Manage Complaints
-            </h3>
-
-            <p className="text-slate-600 mb-4">
-              View, update and resolve tenant complaints.
-            </p>
-
-            <button
-              onClick={() => navigate("/admin/complaints")}
-              className="w-full bg-slate-900 text-white py-3 rounded-lg"
-            >
-              Open
-            </button>
-          </div>
-
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Hostels */}
-          <div className="bg-white border rounded-xl p-6">
-            <h3 className="text-xl font-semibold mb-3">
-              Manage Hostels
-            </h3>
-
-            <p className="text-slate-600 mb-4">
-              Register new hostels and manage existing properties.
-            </p>
+          <div className="bg-white border rounded-xl p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-semibold">Manage Hostels</h3>
+                <span className="text-sm bg-slate-100 px-2.5 py-1 rounded-full font-medium">
+                  {stats.hostels} Properties
+                </span>
+              </div>
+              <p className="text-slate-600 mb-6">
+                Register new hostels, manage rooms, pricing, and view tenant assignments.
+              </p>
+            </div>
 
             <button
               onClick={() => navigate("/admin/hostels")}
-              className="w-full bg-slate-900 text-white py-3 rounded-lg"
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-lg font-medium transition cursor-pointer"
             >
-              Open
+              Open Hostel Management →
+            </button>
+          </div>
+
+          {/* Complaints */}
+          <div className="bg-white border rounded-xl p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-semibold">Manage Complaints</h3>
+                <span className={`text-sm px-2.5 py-1 rounded-full font-medium ${
+                  stats.complaints > 0 ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                }`}>
+                  {stats.complaints} Pending
+                </span>
+              </div>
+              <p className="text-slate-600 mb-6">
+                Review, resolve, and monitor tenant issues across all your properties.
+              </p>
+            </div>
+
+            <button
+              onClick={() => navigate("/admin/complaints")}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-lg font-medium transition cursor-pointer"
+            >
+              Open Complaint Desk →
             </button>
           </div>
         </div>
 
         {/* Activity Section */}
-        <div className="bg-white border rounded-xl p-6 mt-8">
+        <div className="bg-white border rounded-xl p-6 shadow-sm">
           <h3 className="text-xl font-semibold mb-4">
             Recent Activity
           </h3>
 
-          <div className="space-y-3">
-            <div className="border-b pb-3">
-              Complaint #102 marked as resolved.
+          {loading ? (
+            <p className="text-slate-500 text-sm py-4">Loading activity...</p>
+          ) : recentActivity.length === 0 ? (
+            <p className="text-slate-500 text-sm py-4">No recent activity found. As tenants raise complaints or you add hostels, updates will appear here.</p>
+          ) : (
+            <div className="divide-y text-sm">
+              {recentActivity.map((activity, idx) => (
+                <div key={activity.id || idx} className="py-3 flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-slate-900 flex-shrink-0"></div>
+                  <span className="text-slate-700">{activity.text}</span>
+                </div>
+              ))}
             </div>
-
-            <div className="border-b pb-3">
-              New hostel "Sunrise PG" registered.
-            </div>
-
-            <div>
-              Tenant Rahul Sharma registered.
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

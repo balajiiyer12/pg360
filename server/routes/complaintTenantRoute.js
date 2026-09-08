@@ -1,9 +1,10 @@
 import Router from "express";
-import { createComplaint, viewMycomplaints } from "../controller/complaintController.js";
+import { createComplaint, viewMycomplaints, deleteTenantComplaint } from "../controller/complaintController.js";
 
 const router = Router();
 
-router.get('/',viewMycomplaints);
-router.post('/',createComplaint);
+router.get('/', viewMycomplaints);
+router.post('/', createComplaint);
+router.delete('/:complaintid', deleteTenantComplaint);
 
 export default router;
