@@ -7,6 +7,7 @@ import {
   timestamp,
   pgEnum,
   date,
+  unique
 } from 'drizzle-orm/pg-core';
  
 // ENUMS 
@@ -62,18 +63,5 @@ export const complaints = pgTable('complaints', {
   status: statusEnum('status').default('pending').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
- 
-// 5. PAYMENTS
-export const payments = pgTable('payments', {
-  paymentId: uuid('payment_id').defaultRandom().primaryKey().notNull(),
-  tenantId: uuid('tenant_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  hostelId: uuid('hostel_id')
-    .notNull()
-    .references(() => hostels.hostelId, { onDelete: 'cascade' }),
-  amount: integer('amount').notNull(),
-  billingPeriod: date('billing_period').notNull(),
 });
  
