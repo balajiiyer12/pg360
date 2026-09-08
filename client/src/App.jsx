@@ -8,6 +8,7 @@ import ComplaintsPage from './pages/ComplaintsPage.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import ManageComplaints from './pages/ManageComplaints.jsx';
 import ManageHostels from './pages/ManageHostels.jsx';
+import HostelPage from './pages/HostelPage.jsx';
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
         <Route path='/admin/dashboard' element={<AdminDashboard/> } />
         <Route path='/admin/complaints' element={<ManageComplaints/> } />
         <Route path='/admin/hostels' element={<ManageHostels/>} />
+        <Route path='/admin/hostels/:id' element={<HostelPage/>} />
     </Routes>
   )
 }
