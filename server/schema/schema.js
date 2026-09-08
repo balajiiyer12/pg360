@@ -5,9 +5,7 @@ import {
   text,
   integer,
   timestamp,
-  pgEnum,
-  date,
-  unique
+  pgEnum
 } from 'drizzle-orm/pg-core';
  
 // ENUMS 
