@@ -172,7 +172,7 @@ export default function TenantDashboard() {
             </p>
 
             <button
-              onClick={() => navigate("/complaints")}
+              onClick={() => navigate("/tenant/complaint")}
               className="bg-slate-900 text-white px-5 py-3 rounded-lg"
             >
               Raise Complaint
