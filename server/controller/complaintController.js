@@ -124,3 +124,19 @@ export const updateComplaintStatus = async (req, res) => {
     });
   }
 };
+
+export const viewMycomplaints = async(req,res)=>{
+    try{
+        const myComplaints = await db.select().from(complaints).where(
+            eq(complaints.authorId,req.user.id)
+        );
+        return res.status(200).json({myComplaints});
+    }
+    catch(error){
+        return res.status(500).json({success:false,message:error.message});
+    }
+}
+
+export const createComplaint = async (req,res)=>{
+    
+}
