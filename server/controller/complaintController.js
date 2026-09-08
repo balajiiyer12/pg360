@@ -1,4 +1,4 @@
-import { complaints, hostels,users } from "../schema/schema.js";
+import { complaints, hostels,users,rooms } from "../schema/schema.js";
 import { db } from "../db.js";
 import { and,eq } from "drizzle-orm";
 
@@ -130,13 +130,64 @@ export const viewMycomplaints = async(req,res)=>{
         const myComplaints = await db.select().from(complaints).where(
             eq(complaints.authorId,req.user.id)
         );
-        return res.status(200).json({myComplaints});
+        return res.status(200).json({success:true,myComplaints});
     }
     catch(error){
         return res.status(500).json({success:false,message:error.message});
     }
 }
 
-export const createComplaint = async (req,res)=>{
-    
-}
+export const createComplaint = async (req, res) => {
+  try {
+    const { title, description } = req.body;
+
+    if (!title || !description) {
+      return res.status(400).json({
+        success: false,
+        message: "Title and description are required",
+      });
+    }
+
+    const [tenant] = await db
+      .select({
+        roomId: users.roomId,
+      })
+      .from(users)
+      .where(eq(users.id, req.user.id));
+
+    if (!tenant?.roomId) {
+      return res.status(400).json({
+        success: false,
+        message: "Tenant is not assigned to any room",
+      });
+    }
+
+    const [room] = await db
+      .select({
+        hostelId: rooms.hostelId,
+      })
+      .from(rooms)
+      .where(eq(rooms.roomId, tenant.roomId));
+
+    const [newComplaint] = await db
+      .insert(complaints)
+      .values({
+        authorId: req.user.id,
+        hostelId: room.hostelId,
+        title,
+        description,
+      })
+      .returning();
+
+    return res.status(201).json({
+      success: true,
+      message: "Complaint created successfully",
+      complaint: newComplaint,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
