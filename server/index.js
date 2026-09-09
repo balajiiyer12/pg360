@@ -20,7 +20,7 @@ try {
 
   app.use(
     cors({
-      origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+      origin: ["http://storage.googleapis.com/pg360/index.html/"],
       credentials: true,
     })
   );
@@ -33,7 +33,7 @@ try {
   app.use("/api/complaints/admin",protect,isAdmin,complaintAdminRouter);
   app.use("/api/complaints/tenant",protect,isTenant,complaintTenantRouter);
 
-  app.listen(3000, () => {
+  app.listen(8080, () => {
     console.log("Server started");
   });
 } catch (error) {
