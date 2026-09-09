@@ -93,7 +93,7 @@ export const login = async (req, res) => {
       .status(200)
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "lax",
+        sameSite: "strict",
       })
       .json({
         success: true,
