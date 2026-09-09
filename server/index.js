@@ -20,7 +20,7 @@ try {
 
   app.use(
     cors({
-      origin: true,
+      origin: "http://storage.googleapis.com" ,
       credentials: true,
     })
   );
