@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -44,8 +44,10 @@ export default function AdminDashboard() {
           setRecentActivity(data.recentActivity || []);
         }
       } catch (err) {
+        console.log(err);
         setError(err.message || "Failed to load dashboard data");
       } finally {
+        console.log(error);
         setLoading(false);
       }
     }
