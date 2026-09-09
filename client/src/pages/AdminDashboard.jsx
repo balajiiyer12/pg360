@@ -23,11 +23,13 @@ export default function AdminDashboard() {
     async function fetchDashboardStats() {
       try {
         setLoading(true);
+        const token = localStorage.getItem("token"); // Retrieve saved JWT
+
         const response = await fetch(`${API_BASE_URL}/admin/hostel/stats/overview`, {
           method: "GET",
-          credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": token ? `Bearer ${token}` : "", // Send Bearer Token
           },
         });
 

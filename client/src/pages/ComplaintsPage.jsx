@@ -19,13 +19,22 @@ export default function ComplaintsPage() {
     description: "",
   });
 
+  // Helper function to build headers with Authorization Bearer token
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+  };
+
   const fetchMyComplaints = async () => {
     try {
       setLoading(true);
       setError("");
       const response = await fetch(`${API_BASE_URL}/complaints/tenant`, {
         method: "GET",
-        credentials: "include"
+        headers: getAuthHeaders(),
       });
 
       const data = await response.json();
@@ -62,10 +71,7 @@ export default function ComplaintsPage() {
     try {
       const response = await fetch(`${API_BASE_URL}/complaints/tenant`, {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           title: formData.title.trim(),
           description: formData.description.trim(),
@@ -99,10 +105,7 @@ export default function ComplaintsPage() {
       setSuccess("");
       const response = await fetch(`${API_BASE_URL}/complaints/tenant/${complaintId}`, {
         method: "DELETE",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
       });
 
       const data = await response.json();

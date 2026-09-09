@@ -18,6 +18,12 @@ export default function ManageHostels() {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // Helper to retrieve auth token
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const fetchHostels = useCallback(async () => {
     try {
       setLoading(true);
@@ -25,6 +31,9 @@ export default function ManageHostels() {
 
       const response = await fetch(`${API_BASE_URL}/admin/hostel`, {
         credentials: "include",
+        headers: {
+          ...getAuthHeaders(),
+        },
       });
 
       const data = await response.json();
@@ -65,6 +74,7 @@ export default function ManageHostels() {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         body: JSON.stringify(formData),
       });
@@ -122,6 +132,9 @@ export default function ManageHostels() {
       const response = await fetch(`${API_BASE_URL}/admin/hostel/${id}`, {
         method: "DELETE",
         credentials: "include",
+        headers: {
+          ...getAuthHeaders(),
+        },
       });
 
       const data = await response.json();

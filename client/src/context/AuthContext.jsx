@@ -2,25 +2,40 @@ import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(null);
 
-// Environment variable se Base URL (default localhost)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Helper function: LocalStorage se Authorization Header generate karne ke liye
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    };
+  };
+
   // User auth status check karne ke liye helper function
   const checkAuth = async () => {
+    const token = localStorage.getItem("token");
+    
+    // Agar local storage me token hi nahi hai toh API call waste mat karo
+    if (!token) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/auth/me`, {
         method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
+        localStorage.removeItem("token");
         setUser(null);
         return;
       }
@@ -29,6 +44,7 @@ export function AuthProvider({ children }) {
       if (data?.success && data?.user) {
         setUser(data.user);
       } else {
+        localStorage.removeItem("token");
         setUser(null);
       }
     } catch {
@@ -47,7 +63,6 @@ export function AuthProvider({ children }) {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -55,21 +70,27 @@ export function AuthProvider({ children }) {
       });
 
       if (!response.ok) {
-        throw new Error("Login failed");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.msg || errorData?.message || "Login failed");
       }
 
       const data = await response.json();
 
+      // 1. Token Ko LocalStorage me Save Karo
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
+
       if (data?.user) {
         setUser(data.user);
 
-        // Extra details (/auth/me) fetch karne ke liye retry
+        // 2. Extra details (/auth/me) fetch karne ke liye call
         try {
           const fullRes = await fetch(`${API_BASE_URL}/auth/me`, {
             method: "GET",
-            credentials: "include",
             headers: {
               "Content-Type": "application/json",
+              Authorization: `Bearer ${data.token}`,
             },
           });
 
@@ -81,7 +102,7 @@ export function AuthProvider({ children }) {
             }
           }
         } catch {
-          // Extra fetch fail hone par basic user return karega
+          // Extra fetch fail hone par fallback
         }
 
         return data.user;
@@ -96,7 +117,6 @@ export function AuthProvider({ children }) {
   const signup = async (name, email, password) => {
     const response = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: "POST",
-      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -117,15 +137,14 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        method: "POST", // HTTP standard ke mutabiq POST rakha hai
+        headers: getAuthHeaders(),
       });
     } catch {
       // Ignore network errors on logout
     } finally {
+      // Local token aur state dono clean kar do
+      localStorage.removeItem("token");
       setUser(null);
     }
   };

@@ -12,6 +12,12 @@ export default function ManageComplaints() {
   const [success, setSuccess] = useState("");
   const [filter, setFilter] = useState("all"); // 'all', 'pending', 'resolved'
 
+  // Helper to retrieve auth token
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const fetchComplaints = useCallback(async () => {
     try {
       setLoading(true);
@@ -19,6 +25,9 @@ export default function ManageComplaints() {
 
       const response = await fetch(`${API_BASE_URL}/complaints/admin`, {
         credentials: "include",
+        headers: {
+          ...getAuthHeaders(),
+        },
       });
 
       const data = await response.json();
@@ -51,6 +60,7 @@ export default function ManageComplaints() {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({ status: newStatus }),
       });
@@ -85,6 +95,9 @@ export default function ManageComplaints() {
       const response = await fetch(`${API_BASE_URL}/complaints/admin/${complaintId}`, {
         method: "DELETE",
         credentials: "include",
+        headers: {
+          ...getAuthHeaders(),
+        },
       });
 
       const data = await response.json();
