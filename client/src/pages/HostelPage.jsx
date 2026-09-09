@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const INITIAL_ROOM_FORM = { roomName: "", capacity: "", rent: "" };
 const INITIAL_USER_FORM = { name: "", email: "", password: "", roomId: "" };
