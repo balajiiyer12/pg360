@@ -20,7 +20,7 @@ try {
 
   app.use(
     cors({
-      origin: ["http://storage.googleapis.com/pg360"],
+      origin: ["http://storage.googleapis.com"],
       credentials: true,
     })
   );

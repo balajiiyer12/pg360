@@ -93,7 +93,7 @@ export const login = async (req, res) => {
       .status(200)
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: "lax",
       })
       .json({
         success: true,
@@ -116,7 +116,7 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "lax",
   });
   return res.status(200).json({
     success: true,
