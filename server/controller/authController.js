@@ -10,7 +10,7 @@ export const signUp = async (req,res)=>{
         if (!name || !email || !password) {
             return res.status(400).json({
                 success: false,
-                msg: "Please provide name, email, and password.",
+                message: "Please provide name, email, and password.",
             });
         }
 
@@ -19,7 +19,7 @@ export const signUp = async (req,res)=>{
         if(existingUser.length > 0){
             return res.status(400).json({
                 success: false,
-                msg: "User already exists with this email.",
+                message: "User already exists with this email.",
             });
         }
     const saltRounds = 10;
@@ -29,7 +29,7 @@ export const signUp = async (req,res)=>{
         { id: users.id, name: users.name, email: users.email, role: users.role });
     return res.status(201).json({
       success: true,
-      msg: "Account created successfully! Please log in.",
+      message: "Account created successfully! Please log in.",
       user: {
         id: newUser.id,
         name: newUser.name,
@@ -43,7 +43,7 @@ export const signUp = async (req,res)=>{
    
         return res.status(500).json({
         success: false,
-        msg: error.message,
+        message: error.message,
         });
   }
 }
@@ -55,7 +55,7 @@ export const login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        msg: "Please provide email and password.",
+        message: "Please provide email and password.",
       });
     }
 
@@ -68,7 +68,7 @@ export const login = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        msg: "Invalid email or password.",
+        message: "Invalid email or password.",
       });
     }
 
@@ -77,7 +77,7 @@ export const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        msg: "Invalid email or password.",
+        message: "Invalid email or password.",
       });
     }
 
@@ -97,7 +97,7 @@ export const login = async (req, res) => {
       })
       .json({
         success: true,
-        msg: "Logged in successfully!",
+        message: "Logged in successfully!",
         token: token,
         user: {
           id: user.id,
@@ -109,7 +109,7 @@ export const login = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      msg: error.message,
+      message: error.message,
     });
   }
 };
@@ -121,7 +121,7 @@ export const logout = (req, res) => {
   });
   return res.status(200).json({
     success: true,
-    msg: "Logged out successfully.",
+    message: "Logged out successfully.",
   });
 };
 
