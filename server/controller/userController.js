@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 export const createUser = async (req, res) => {
   try {
     const { name, email, password, roomId, hostelId } = req.body;
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !hostelId) {
       return res.status(400).json({ success: false, message: "Enter all fields" });
     }
 
