@@ -8,6 +8,42 @@ function AdminComplaintPage() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all'); // 'all', 'pending', 'resolved'
 
+    const handleDelete = async (complaintId) => {
+        try {
+            const token = localStorage.getItem("token");
+            await axios.delete(`http://localhost:8080/api/complaints/admin/${complaintId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+                withCredentials: true
+            });
+            // Remove the deleted complaint from local state
+            setComplaints(prev => prev.filter(c => c.complaintId !== complaintId));
+        } catch (err) {
+            console.error("Failed to delete complaint:", err);
+            alert(err.response?.data?.message || "Failed to delete complaint");
+        }
+    };
+
+    const updateStatus = async (complaintId, newStatus) => {
+        try {
+            console.log(complaintId);
+            const token = localStorage.getItem("token");
+            await axios.patch(`http://localhost:8080/api/complaints/admin/${complaintId}`, 
+                { status: newStatus },
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true
+                }
+            );
+            // Update the status of the complaint in local state
+            setComplaints(prev => prev.map(c => 
+                c.complaintId === complaintId ? { ...c, status: newStatus } : c
+            ));
+        } catch (err) {
+            console.error("Failed to update complaint status:", err);
+            alert(err.response?.data?.message || "Failed to update status");
+        }
+    };
+    
     useEffect(() => {
         const fetchComplaints = async () => {
             try {
@@ -146,10 +182,25 @@ function AdminComplaintPage() {
                                     </div>
 
                                     <div className="flex items-center gap-3">
-                                        <button className="px-4 py-2 text-sm font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer">
-                                            <span>✓</span> Mark Resolved
-                                        </button>
-                                        <button className="px-4 py-2 text-sm font-semibold bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors cursor-pointer">
+                                        {complaint.status !== 'resolved' ? (
+                                            <button 
+                                                onClick={() => updateStatus(complaint.complaintId, 'resolved')}
+                                                className="px-4 py-2 text-sm font-semibold bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer"
+                                            >
+                                                <span>✓</span> Mark Resolved
+                                            </button>
+                                        ) : (
+                                            <button 
+                                                onClick={() => updateStatus(complaint.complaintId, 'pending')}
+                                                className="px-4 py-2 text-sm font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer"
+                                            >
+                                                Mark Pending
+                                            </button>
+                                        )}
+                                        <button 
+                                            onClick={() => handleDelete(complaint.complaintId)}
+                                            className="px-4 py-2 text-sm font-semibold bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
+                                        >
                                             Delete Ticket
                                         </button>
                                     </div>
