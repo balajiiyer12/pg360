@@ -4,7 +4,7 @@ import { createRoom, deleteRoom, editRoom, getAllRoom } from "../controller/room
 
 const router = Router();
 
-router.get('/stats/overview', getAdminStats);
+router.get('/stats', getAdminStats);
 router.get('/', getAllHostels);
 router.post('/', createHostel);
 router.get('/:hostelid', getHostelById);

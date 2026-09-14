@@ -161,26 +161,22 @@ export const getAdminStats = async (req, res) => {
         success: true,
         stats: {
           hostels: 0,
-          rooms: 0,
           tenants: 0,
           complaints: 0,
           occupancy: "0%",
         },
-        recentActivity: [],
       });
     }
 
-    // 2. Get all rooms for these hostels
+    // 2. Get all rooms for these hostels (needed for capacity calculation)
     const allRooms = await db
       .select({
         roomId: rooms.roomId,
         capacity: rooms.capacity,
-        hostelId: rooms.hostelId,
       })
       .from(rooms)
       .where(inArray(rooms.hostelId, hostelIds));
 
-    const totalRooms = allRooms.length;
     const totalCapacity = allRooms.reduce((sum, r) => sum + (r.capacity || 0), 0);
     const roomIds = allRooms.map((r) => r.roomId);
 
@@ -202,10 +198,7 @@ export const getAdminStats = async (req, res) => {
     // 4. Count pending complaints
     const allComplaints = await db
       .select({
-        complaintId: complaints.complaintId,
-        title: complaints.title,
         status: complaints.status,
-        createdAt: complaints.createdAt,
       })
       .from(complaints)
       .where(inArray(complaints.hostelId, hostelIds));
@@ -215,32 +208,19 @@ export const getAdminStats = async (req, res) => {
     // 5. Calculate occupancy rate
     const occupancyRate =
       totalCapacity > 0
-        ? `${Math.min(100, Math.round((totalTenants / totalCapacity) * 100))}%`
-        : totalRooms > 0 && totalTenants > 0
-        ? "100%"
+        ? `${Math.round((totalTenants / totalCapacity) * 100)}%`
         : "0%";
-
-    // 6. Recent activity (latest complaints)
-    const recentActivity = allComplaints
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 4)
-      .map((c) => ({
-        id: c.complaintId,
-        text: `Complaint "${c.title}" is currently ${c.status}.`,
-      }));
 
     return res.status(200).json({
       success: true,
       stats: {
         hostels: totalHostels,
-        rooms: totalRooms,
         tenants: totalTenants,
         complaints: openComplaints,
         occupancy: occupancyRate,
       },
-      recentActivity,
     });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
-};   
+};
