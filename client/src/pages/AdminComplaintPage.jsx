@@ -34,7 +34,6 @@ function AdminComplaintPage() {
                     withCredentials: true
                 }
             );
-            // Update the status of the complaint in local state
             setComplaints(prev => prev.map(c => 
                 c.complaintId === complaintId ? { ...c, status: newStatus } : c
             ));
