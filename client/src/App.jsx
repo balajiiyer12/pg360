@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import TenantDashboard from './pages/TenantDashboard';
 import AdminComplaintPage from './pages/AdminComplaintPage';
 import ManageHostels from './pages/ManageHostels';
+import HostelPage from './pages/HostelPage';
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
                <Route path='/admin/dashboard' element={<AdminDashboard/>}/>
                <Route path='/admin/complaints' element={<AdminComplaintPage/>}/>
                <Route path='/admin/hostels' element={<ManageHostels/>}/>
+               <Route path='/admin/hostels/:hostelid' element={<HostelPage/>}/>
             </Route>
 
             <Route element={<ProtectedRoute allowedRole="tenant" />}>

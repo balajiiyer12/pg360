@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Footer from "../components/Footer";
 import LoggedInNavbar from "../components/LoggedInNavbar";
+import { useNavigate } from 'react-router-dom';
 
 function ManageHostels() {
+    const navigate = useNavigate();
     const [hostels, setHostels] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -100,7 +102,7 @@ function ManageHostels() {
     };
 
     const handleCardClick = (hostelId) => {
-        alert(`Navigating to specific management page for hostel ID: ${hostelId}`);
+        navigate(`${hostelId}`);
     };
 
     const openEditModal = (hostel) => {
