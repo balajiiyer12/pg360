@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const {login} = useAuth();
 
   const navigate = useNavigate();
 
@@ -43,6 +45,8 @@ function LoginPage() {
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
+
+      login(response.data.user);
 
       response?.data?.user?.role==="admin"?navigate("/admin/dashboard"):navigate("/tenant/dashboard")
     } catch (err) {

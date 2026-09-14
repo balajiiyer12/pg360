@@ -13,13 +13,8 @@ const ProtectedRoute = ({ allowedRole }) => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (allowedRole && user.role !== allowedRole) {
-    const fallbackPath = user.role === "admin" ? "/admin/dashboard" : "/tenant/dashboard";
-    return <Navigate to={fallbackPath} replace />;
+  if (!user || (allowedRole && user.role !== allowedRole)) {
+    return <Navigate to="/login"/>;
   }
 
   return <Outlet />;
