@@ -44,7 +44,7 @@ function LoginPage() {
         localStorage.setItem("token", response.data.token);
       }
 
-      navigate("/dashboard");
+      response?.data?.user?.role==="admin"?navigate("/admin/dashboard"):navigate("/tenant/dashboard")
     } catch (err) {
       setError(
         err.response?.data?.message || "Something went wrong! Please try again."
