@@ -40,9 +40,9 @@ export const getHostelById = async (req, res) => {
 export const createHostel = async (req, res) => {
   try {
     const { name, description } = req.body;
-    const ownerId = req.body.ownerId || req.user.id;
+    const ownerId = req.user.id;
 
-    if (!name || !ownerId || !description) {
+    if (!name ||!description) {
       return res.status(400).json({ success: false, message: "Enter all fields" });
     }
 
