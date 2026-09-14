@@ -17,7 +17,7 @@ function AdminDashboard() {
                     </p>
                 </div>
 
-                {/* Metrics Grid */}
+                {/* Metrics*/}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     {/* Card 1: Total Hostels */}
                     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -58,7 +58,7 @@ function AdminDashboard() {
                         </div>
                         <div>
                             <p className="text-xs font-medium text-slate-400 mb-1">Account Role</p>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-900 text-white tracking-wide">
+                            <span className="  px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-900 text-white">
                                 ADMIN
                             </span>
                         </div>
@@ -72,7 +72,7 @@ function AdminDashboard() {
                         <div>
                             <div className="flex justify-between items-start mb-2">
                                 <h3 className="text-lg font-semibold text-slate-900">Manage Hostels</h3>
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
                                     1 Properties
                                 </span>
                             </div>
@@ -90,7 +90,7 @@ function AdminDashboard() {
                         <div>
                             <div className="flex justify-between items-start mb-2">
                                 <h3 className="text-lg font-semibold text-slate-900">Manage Complaints</h3>
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
                                     1 Pending
                                 </span>
                             </div>
