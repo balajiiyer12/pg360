@@ -5,6 +5,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import TenantDashboard from './pages/TenantDashboard';
+import AdminComplaintPage from './pages/AdminComplaintPage';
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
 
             <Route element={<ProtectedRoute allowedRole="admin" />}>
                <Route path='/admin/dashboard' element={<AdminDashboard/>}/>
+               <Route path='/admin/complaints' element={<AdminComplaintPage/>}/>
             </Route>
 
             <Route element={<ProtectedRoute allowedRole="tenant" />}>

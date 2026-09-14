@@ -1,11 +1,11 @@
 import { complaints, hostels, users, rooms } from "../schema/schema.js";
 import { db } from "../db.js";
 import { and, eq, desc } from "drizzle-orm";
+import e from "express";
 
 export const getAllAdminComplaints = async (req, res) => {
   try {
-    const allComplaints = await db
-      .select({
+      const allComplaints = await db.select({
         complaintId: complaints.complaintId,
         title: complaints.title,
         description: complaints.description,
@@ -15,14 +15,15 @@ export const getAllAdminComplaints = async (req, res) => {
         hostelName: hostels.name,
         tenantName: users.name,
         tenantEmail: users.email,
-        roomName: rooms.roomName,
-      })
-      .from(complaints)
-      .innerJoin(hostels, eq(complaints.hostelId, hostels.hostelId))
-      .innerJoin(users, eq(complaints.authorId, users.id))
-      .leftJoin(rooms, eq(users.roomId, rooms.roomId))
-      .where(eq(hostels.ownerId, req.user.id))
-      .orderBy(desc(complaints.createdAt));
+        roomName: rooms.roomName
+        
+      }).from(complaints)
+        .innerJoin(users,eq(complaints.authorId,users.id))
+        .innerJoin(hostels,eq(complaints.hostelId,hostels.hostelId))
+        .innerJoin(rooms,eq(users.roomId,rooms.roomId))
+        .where(eq(hostels.ownerId,req.user.id))
+        .orderBy(desc(complaints.createdAt));
+
 
     return res.status(200).json({ success: true, allComplaints });
   } catch (err) {
@@ -63,7 +64,7 @@ export const viewHostelComplaints = async (req, res) => {
       .from(complaints)
       .innerJoin(hostels, eq(complaints.hostelId, hostels.hostelId))
       .innerJoin(users, eq(complaints.authorId, users.id))
-      .leftJoin(rooms, eq(users.roomId, rooms.roomId))
+      .innerJoin(rooms, eq(users.roomId, rooms.roomId))
       .where(eq(complaints.hostelId, hostelid))
       .orderBy(desc(complaints.createdAt));
 

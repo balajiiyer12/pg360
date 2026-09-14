@@ -24,7 +24,7 @@ function LoggedInNavbar() {
 
       <button 
         onClick={handleLogout} 
-        className="px-6 py-2 text-sm font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all shadow-sm"
+        className="px-6 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-slate-800 transition-all shadow-sm"
       >
         Logout
       </button>
