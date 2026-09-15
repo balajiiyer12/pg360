@@ -3,13 +3,23 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import Footer from "../components/Footer";
 import LoggedInNavbar from "../components/LoggedInNavbar.jsx"
-import { API_URL } from "../config";
+import axios from "axios";
+import { API_URL } from "../config";    
 
 export default function TenantDashboard() {
+
     const navigate = useNavigate();
     const { user, logout } = useAuth();
+    const token = localStorage.getItem("token");
 
-    // Extract details safely from Auth context user object
+    const axiosConfig = {
+        withCredentials: true,
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    };
+
     const room = user?.room || {};
     const hostelName = user?.hostelName || "My Hostel";
     const rentAmount = room?.rent || 0;
@@ -31,29 +41,28 @@ export default function TenantDashboard() {
 
     // Fetch tenant complaints on mount
     const fetchComplaints = async () => {
-        try {
-            setLoadingComplaints(true);
-            const response = await fetch(`${API_URL}/complaints/tenant`, {
-                credentials: 'include'
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Failed to fetch complaints");
-            setComplaints(data.myComplaints || []);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoadingComplaints(false);
-        }
-    };
+    try {
+        setLoadingComplaints(true);
+
+        const { data } = await axios.get(
+            `${API_URL}/complaints/tenant`,
+            axiosConfig
+        );
+
+        setComplaints(data.myComplaints || []);
+    } catch (err) {
+        setError(
+            err.response?.data?.message || err.message
+        );
+    } finally {
+        setLoadingComplaints(false);
+    }
+};
 
     useEffect(() => {
         fetchComplaints();
     }, []);
 
-    const handleLogout = async () => {
-        await logout();
-        navigate("/login");
-    };
 
     // Handle Direct Payment Submission
     const handleDirectPayment = async () => {
@@ -65,48 +74,60 @@ export default function TenantDashboard() {
 
     // Handle creating a complaint
     const handleCreateComplaint = async (e) => {
-        e.preventDefault();
-        if (!title || !description) return;
+    e.preventDefault();
 
-        try {
-            setSubmitting(true);
-            const response = await fetch(`${API_URL}/complaints/tenant`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description }),
-                credentials: 'include'
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Failed to create complaint");
+    if (!title || !description) return;
 
-            setTitle('');
-            setDescription('');
-            setShowComplaintModal(false);
-            fetchComplaints();
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            setSubmitting(false);
-        }
-    };
+    try {
+        setSubmitting(true);
+
+        await axios.post(
+            `${API_URL}/complaints/tenant`,
+            {
+                title,
+                description,
+            },
+            axiosConfig
+        );
+
+        setTitle("");
+        setDescription("");
+        setShowComplaintModal(false);
+
+        fetchComplaints();
+    } catch (err) {
+        alert(
+            err.response?.data?.message ||
+            err.message
+        );
+    } finally {
+        setSubmitting(false);
+    }
+};
 
     // Handle deleting a complaint
     const handleDeleteComplaint = async (complaintId) => {
-        if (!window.confirm("Are you sure you want to delete this complaint?")) return;
+    if (
+        !window.confirm(
+            "Are you sure you want to delete this complaint?"
+        )
+    )
+        return;
 
-        try {
-            const response = await fetch(`${API_URL}/complaints/tenant/${complaintId}`, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Failed to delete complaint");
+    try {
+        await axios.delete(
+            `${API_URL}/complaints/tenant/${complaintId}`,
+            axiosConfig
+        );
 
-            fetchComplaints();
-        } catch (err) {
-            alert(err.message);
-        }
-    };
+        fetchComplaints();
+    } catch (err) {
+        alert(
+            err.response?.data?.message ||
+            err.message
+        );
+    }
+};
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col justify-between text-slate-800">

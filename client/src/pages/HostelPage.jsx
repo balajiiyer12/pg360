@@ -3,10 +3,20 @@ import { useParams } from 'react-router-dom';
 import Footer from "../components/Footer";
 import LoggedInNavbar from "../components/LoggedInNavbar";
 import RoomModal from "../components/RoomModal";
+import axios from "axios";
 import { API_URL } from "../config";
 
 function HostelPage() {
     const { hostelid } = useParams();
+    const token = localStorage.getItem("token");
+
+    const axiosConfig = {
+        withCredentials: true,
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+        },
+    };
 
     const [hostel, setHostel] = useState(null);
     const [rooms, setRooms] = useState([]);
@@ -29,32 +39,41 @@ function HostelPage() {
     const [submittingTenant, setSubmittingTenant] = useState(false);
 
     useEffect(() => {
-        const fetchHostelData = async () => {
-            try {
-                setLoading(true);
-                const [hostelRes, roomsRes, tenantsRes] = await Promise.all([
-                    fetch(`${API_URL}/admin/hostel/${hostelid}`, { credentials: 'include' }),
-                    fetch(`${API_URL}/admin/hostel/${hostelid}/room`, { credentials: 'include' }),
-                    fetch(`${API_URL}/admin/users/hostel/${hostelid}`, { credentials: 'include' })
-                ]);
+        useEffect(() => {
+    const fetchHostelData = async () => {
+        try {
+            setLoading(true);
 
-                const hostelData = await hostelRes.json();
-                const roomsData = await roomsRes.json();
-                const tenantsData = await tenantsRes.json();
+            const [hostelRes, roomsRes, tenantsRes] = await Promise.all([
+                axios.get(
+                    `${API_URL}/admin/hostel/${hostelid}`,
+                    axiosConfig
+                ),
+                axios.get(
+                    `${API_URL}/admin/hostel/${hostelid}/room`,
+                    axiosConfig
+                ),
+                axios.get(
+                    `${API_URL}/admin/users/hostel/${hostelid}`,
+                    axiosConfig
+                ),
+            ]);
 
-                if (!hostelRes.ok) throw new Error(hostelData.message || "Failed to fetch hostel details");
-                if (!roomsRes.ok) throw new Error(roomsData.message || "Failed to fetch rooms");
-                if (!tenantsRes.ok) throw new Error(tenantsData.message || "Failed to fetch tenants");
+            setHostel(hostelRes.data.hostel || hostelRes.data);
+            setRooms(roomsRes.data.allRooms || []);
+            setTenants(tenantsRes.data.tenants || []);
+        } catch (err) {
+            setError(
+                err.response?.data?.message || err.message
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
 
-                setHostel(hostelData.hostel || hostelData);
-                setRooms(roomsData.allRooms || []);
-                setTenants(tenantsData.tenants || []);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
+    if (hostelid) fetchHostelData();
+}, [hostelid]);
+
 
         if (hostelid) fetchHostelData();
     }, [hostelid]);
@@ -74,58 +93,72 @@ function HostelPage() {
         setIsRoomModalOpen(true);
     };
 
-    const handleRoomSubmit = async (e) => {
-        e.preventDefault();
-        setSubmitting(true);
+const handleRoomSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
 
-        try {
-            const url = modalMode === 'add' 
-                ? `${API_URL}/admin/hostel/${hostelid}/room`
-                : `${API_URL}/admin/hostel/rooms/${currentRoomId}`;
-            
-            const method = modalMode === 'add' ? 'POST' : 'PUT';
+    try {
+        let data;
 
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(roomForm)
-            });
-
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Failed to save room");
-
-            if (modalMode === 'add') {
-                setRooms([...rooms, data.newRoom]);
-            } else {
-                setRooms(rooms.map(r => r.roomId === currentRoomId ? data.updatedRoom : r));
-            }
-
-            setIsRoomModalOpen(false);
-        } catch (err) {
-            alert(`Error: ${err.message}`);
-        } finally {
-            setSubmitting(false);
+        if (modalMode === "add") {
+            const response = await axios.post(
+                `${API_URL}/admin/hostel/${hostelid}/room`,
+                roomForm,
+                axiosConfig
+            );
+            data = response.data;
+        } else {
+            const response = await axios.put(
+                `${API_URL}/admin/hostel/rooms/${currentRoomId}`,
+                roomForm,
+                axiosConfig
+            );
+            data = response.data;
         }
-    };
+
+        if (modalMode === "add") {
+            setRooms([...rooms, data.newRoom]);
+        } else {
+            setRooms(
+                rooms.map((r) =>
+                    r.roomId === currentRoomId
+                        ? data.updatedRoom
+                        : r
+                )
+            );
+        }
+
+        setIsRoomModalOpen(false);
+    } catch (err) {
+        alert(
+            err.response?.data?.message ||
+                err.message
+        );
+    } finally {
+        setSubmitting(false);
+    }
+};
 
     const handleDeleteRoom = async (roomId) => {
-        if (!window.confirm("Are you sure you want to delete this room?")) return;
+    if (!window.confirm("Are you sure you want to delete this room?"))
+        return;
 
-        try {
-            const response = await fetch(`${API_URL}/admin/hostel/rooms/${roomId}`, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
+    try {
+        await axios.delete(
+            `${API_URL}/admin/hostel/rooms/${roomId}`,
+            axiosConfig
+        );
 
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Failed to delete room");
-
-            setRooms(rooms.filter(r => r.roomId !== roomId));
-        } catch (err) {
-            alert(`Error: ${err.message}`);
-        }
-    };
+        setRooms(
+            rooms.filter((r) => r.roomId !== roomId)
+        );
+    } catch (err) {
+        alert(
+            err.response?.data?.message ||
+                err.message
+        );
+    }
+};
 
     // Tenant Handlers
     const handleOpenAddTenantModal = () => {
@@ -147,78 +180,108 @@ function HostelPage() {
         setIsTenantModalOpen(true);
     };
 
+    
     const handleTenantSubmit = async (e) => {
-        e.preventDefault();
-        setSubmittingTenant(true);
+    e.preventDefault();
+    setSubmittingTenant(true);
 
-        try {
-            const url = tenantModalMode === 'add'
-                ? `${API_URL}/admin/users`
-                : `${API_URL}/admin/users/${currentTenantId}`;
+    try {
+        const payload = {
+            ...tenantForm,
+            hostelId: hostelid,
+        };
 
-            const method = tenantModalMode === 'add' ? 'POST' : 'PUT';
-
-            const payload = {
-                ...tenantForm,
-                hostelId: hostelid
-            };
-
-            // If editing and password is left empty, don't send it so it doesn't overwrite with blank hash
-            if (tenantModalMode === 'edit' && !payload.password) {
-                delete payload.password;
-            }
-
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(payload)
-            });
-
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Failed to save tenant");
-
-            // Refresh tenants list or manually map state
-            const savedUser = data.newUser || data.updatedUser;
-            
-            // Find the room name corresponding to roomId for UI rendering consistency
-            const assignedRoom = rooms.find(r => r.roomId === savedUser.roomId);
-            const enrichedTenant = {
-                ...savedUser,
-                roomName: assignedRoom ? assignedRoom.roomName : "Unassigned"
-            };
-
-            if (tenantModalMode === 'add') {
-                setTenants([...tenants, enrichedTenant]);
-            } else {
-                setTenants(tenants.map(t => t.id === currentTenantId ? enrichedTenant : t));
-            }
-
-            setIsTenantModalOpen(false);
-        } catch (err) {
-            alert(`Error: ${err.message}`);
-        } finally {
-            setSubmittingTenant(false);
+        if (
+            tenantModalMode === "edit" &&
+            !payload.password
+        ) {
+            delete payload.password;
         }
-    };
+
+        let data;
+
+        if (tenantModalMode === "add") {
+            const response = await axios.post(
+                `${API_URL}/admin/users`,
+                payload,
+                axiosConfig
+            );
+
+            data = response.data;
+        } else {
+            const response = await axios.put(
+                `${API_URL}/admin/users/${currentTenantId}`,
+                payload,
+                axiosConfig
+            );
+
+            data = response.data;
+        }
+
+        const savedUser =
+            data.newUser || data.updatedUser;
+
+        const assignedRoom = rooms.find(
+            (r) => r.roomId === savedUser.roomId
+        );
+
+        const enrichedTenant = {
+            ...savedUser,
+            roomName: assignedRoom
+                ? assignedRoom.roomName
+                : "Unassigned",
+        };
+
+        if (tenantModalMode === "add") {
+            setTenants([
+                ...tenants,
+                enrichedTenant,
+            ]);
+        } else {
+            setTenants(
+                tenants.map((t) =>
+                    t.id === currentTenantId
+                        ? enrichedTenant
+                        : t
+                )
+            );
+        }
+
+        setIsTenantModalOpen(false);
+    } catch (err) {
+        alert(
+            err.response?.data?.message ||
+                err.message
+        );
+    } finally {
+        setSubmittingTenant(false);
+    }
+};
 
     const handleDeleteTenant = async (tenantId) => {
-        if (!window.confirm("Are you sure you want to delete this tenant?")) return;
+    if (
+        !window.confirm(
+            "Are you sure you want to delete this tenant?"
+        )
+    )
+        return;
 
-        try {
-            const response = await fetch(`${API_URL}/admin/users/${tenantId}`, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
+    try {
+        await axios.delete(
+            `${API_URL}/admin/users/${tenantId}`,
+            axiosConfig
+        );
 
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || "Failed to delete tenant");
-
-            setTenants(tenants.filter(t => t.id !== tenantId));
-        } catch (err) {
-            alert(`Error: ${err.message}`);
-        }
-    };
+        setTenants(
+            tenants.filter((t) => t.id !== tenantId)
+        );
+    } catch (err) {
+        alert(
+            err.response?.data?.message ||
+                err.message
+        );
+    }
+};
 
     const totalRooms = rooms.length;
     const totalBedCapacity = rooms.reduce((acc, room) => acc + Number(room.capacity || 0), 0);
