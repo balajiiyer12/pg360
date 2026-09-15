@@ -46,23 +46,26 @@ function HostelPage() {
           ),
         ]);
 
-        setRooms(roomsRes?.data?.allRooms || []);
-        setHostel(hostelRes?.data?.hostel);
-        setTenants(tenantsRes?.data?.tenants || []);
+       const  roomsData = roomsRes?.data?.allRooms || [];
+       const hostelData = hostelRes?.data?.hostel;
+       const tenantsData = tenantsRes?.data?.tenants || [];
+        setRooms(roomsData);
+        setHostel(hostelData);
+        setTenants(tenantsData);
 
-        const totalCapacity = rooms.reduce(
+        const totalCapacity = roomsData.reduce(
           (sum, room) => sum + Number(room.capacity || 0),
           0
         );
 
         const occupancy =
           totalCapacity > 0
-            ? `${Math.round((tenants.length / totalCapacity) * 100)}%`
+            ? `${Math.round((tenantsData.length / totalCapacity) * 100)}%`
             : "0%";
 
         setStats({
-          totalRooms: rooms.length,
-          totalTenants: tenants.length,
+          totalRooms: roomsData.length,
+          totalTenants: tenantsData.length,
           occupancy,
         });
       } catch (error) {
@@ -71,11 +74,9 @@ function HostelPage() {
     };
 
     fetchStats();
-  }, [hostelid]);
+  }, [hostelid,token]);
 
-  const occupied = tenants.filter(
-  (tenant) => tenant.roomId === room.roomId
-  ).length;
+ 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 text-slate-800">
       <LoggedInNavbar />
@@ -84,7 +85,7 @@ function HostelPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-            {hostel.name}
+            {hostel?.name}
           </h1>
 
           <p className="text-sm text-slate-500 mt-1">
@@ -135,6 +136,7 @@ function HostelPage() {
           </div>
 
           <div className="space-y-4">
+
   {rooms.map((room) => {
     return (
       <div
