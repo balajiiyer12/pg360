@@ -157,9 +157,6 @@ function HostelPage() {
           </div>
 
           <div className="grid grid-cols-3 gap-2 w-full lg:w-auto">
-            <button className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">
-              View
-            </button>
 
             <button className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">
               Edit
