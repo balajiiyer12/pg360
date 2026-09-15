@@ -43,12 +43,15 @@ function LoginPage() {
       );
 
       console.log("Login Success:", response.data.user.role);
-console.log(1)
+      
+      console.log(1)
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
+      login(response.data.user);
       console.log(2);
-      response?.data?.user?.role==="admin" ? navigate("/admin/dashboard"):navigate("/tenant/dashboard")
+      response?.data?.user?.role=="admin" ? navigate("/admin/dashboard"):navigate("/tenant/dashboard")
+      console.log(3);
     } catch (err) {
       setError(
         err.response?.data?.message || "Something went wrong! Please try again."
@@ -57,6 +60,7 @@ console.log(1)
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
