@@ -199,7 +199,7 @@ export default function TenantDashboard() {
                                </div>
                                <div className="flex justify-between py-3">
                                    <span className="text-slate-500">Room</span>
-                                   <span className="font-semibold text-slate-900">{room?.roomNumber || room?.number || "-"}</span>
+                                   <span className="font-semibold text-slate-900">{room?.roomName}</span>
                                </div>
                            </div>
                        </div>
