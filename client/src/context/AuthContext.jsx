@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
       withCredentials: true,
     });
     setUser(response.data.user);
+    console.log(user);
   } catch (err) {
     setUser(null);
   } finally {

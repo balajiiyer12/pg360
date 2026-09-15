@@ -38,7 +38,7 @@ function HostelPage() {
     const [tenantForm, setTenantForm] = useState({ name: '', email: '', password: '', roomId: '' });
     const [submittingTenant, setSubmittingTenant] = useState(false);
 
-    useEffect(() => {
+    
         useEffect(() => {
     const fetchHostelData = async () => {
         try {
@@ -73,10 +73,6 @@ function HostelPage() {
 
     if (hostelid) fetchHostelData();
 }, [hostelid]);
-
-
-        if (hostelid) fetchHostelData();
-    }, [hostelid]);
 
     // Room Handlers
     const handleOpenAddModal = () => {
