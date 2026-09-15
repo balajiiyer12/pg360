@@ -31,9 +31,9 @@ export const AuthProvider = ({ children }) => {
     checkUserLoggedIn();
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
-  };
+  // const login = (userData) => {
+  //   setUser(userData);
+  // };
 
   const logout = async () => {
     try {
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

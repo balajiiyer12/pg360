@@ -21,7 +21,7 @@ export default function TenantDashboard() {
     };
 
     const room = user?.room || {};
-    const hostelName = user?.hostelName || "My Hostel";
+    const hostelName = user?.room?.hostelName || "My Hostel";
     const rentAmount = room?.rent || 0;
 
     // Payment state

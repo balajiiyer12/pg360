@@ -9,7 +9,6 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const {login} = useAuth();
 
   const navigate = useNavigate();
 
@@ -46,8 +45,6 @@ function LoginPage() {
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
-
-      login(response.data.user);
 
       response?.data?.user?.role==="admin"?navigate("/admin/dashboard"):navigate("/tenant/dashboard")
     } catch (err) {
