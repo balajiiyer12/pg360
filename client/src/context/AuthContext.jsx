@@ -10,8 +10,10 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const checkUserLoggedIn = async () => {
+
   try {
     const token = localStorage.getItem("token");
+    setUser(null)
 
     const response = await axios.get(`${API_URL}/auth/me`, {
       headers: {
@@ -31,9 +33,9 @@ export const AuthProvider = ({ children }) => {
     checkUserLoggedIn();
   }, []);
 
-  // const login = (userData) => {
-  //   setUser(userData);
-  // };
+  const login = (userData) => {
+    setUser(userData);
+  };
 
   const logout = async () => {
     try {

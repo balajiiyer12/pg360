@@ -11,6 +11,8 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const {login} = useAuth();
+
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -45,7 +47,7 @@ console.log(1)
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
-      console.log(2)
+      login(response?.data?.user);
       response?.data?.user?.role==="admin" ? navigate("/admin/dashboard"):navigate("/tenant/dashboard")
     } catch (err) {
       setError(
