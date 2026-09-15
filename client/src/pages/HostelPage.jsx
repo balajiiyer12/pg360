@@ -13,12 +13,19 @@ function HostelPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Modal & Form States
+    // Room Modal & Form States
     const [isRoomModalOpen, setIsRoomModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('add');
     const [currentRoomId, setCurrentRoomId] = useState(null);
     const [roomForm, setRoomForm] = useState({ roomName: '', capacity: '', rent: '' });
     const [submitting, setSubmitting] = useState(false);
+
+    // Tenant Modal & Form States
+    const [isTenantModalOpen, setIsTenantModalOpen] = useState(false);
+    const [tenantModalMode, setTenantModalMode] = useState('add');
+    const [currentTenantId, setCurrentTenantId] = useState(null);
+    const [tenantForm, setTenantForm] = useState({ name: '', email: '', password: '', roomId: '' });
+    const [submittingTenant, setSubmittingTenant] = useState(false);
 
     useEffect(() => {
         const fetchHostelData = async () => {
@@ -51,6 +58,7 @@ function HostelPage() {
         if (hostelid) fetchHostelData();
     }, [hostelid]);
 
+    // Room Handlers
     const handleOpenAddModal = () => {
         setModalMode('add');
         setRoomForm({ roomName: '', capacity: '', rent: '' });
@@ -118,6 +126,99 @@ function HostelPage() {
         }
     };
 
+    // Tenant Handlers
+    const handleOpenAddTenantModal = () => {
+        setTenantModalMode('add');
+        setTenantForm({ name: '', email: '', password: '', roomId: '' });
+        setCurrentTenantId(null);
+        setIsTenantModalOpen(true);
+    };
+
+    const handleOpenEditTenantModal = (tenant) => {
+        setTenantModalMode('edit');
+        setTenantForm({ 
+            name: tenant.name, 
+            email: tenant.email, 
+            password: '', // leave blank unless changing
+            roomId: tenant.roomId || '' 
+        });
+        setCurrentTenantId(tenant.id);
+        setIsTenantModalOpen(true);
+    };
+
+    const handleTenantSubmit = async (e) => {
+        e.preventDefault();
+        setSubmittingTenant(true);
+
+        try {
+            const url = tenantModalMode === 'add'
+                ? `http://localhost:8080/api/admin/users`
+                : `http://localhost:8080/api/admin/users/${currentTenantId}`;
+
+            const method = tenantModalMode === 'add' ? 'POST' : 'PUT';
+
+            const payload = {
+                ...tenantForm,
+                hostelId: hostelid
+            };
+
+            // If editing and password is left empty, don't send it so it doesn't overwrite with blank hash
+            if (tenantModalMode === 'edit' && !payload.password) {
+                delete payload.password;
+            }
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Failed to save tenant");
+
+            // Refresh tenants list or manually map state
+            const savedUser = data.newUser || data.updatedUser;
+            
+            // Find the room name corresponding to roomId for UI rendering consistency
+            const assignedRoom = rooms.find(r => r.roomId === savedUser.roomId);
+            const enrichedTenant = {
+                ...savedUser,
+                roomName: assignedRoom ? assignedRoom.roomName : "Unassigned"
+            };
+
+            if (tenantModalMode === 'add') {
+                setTenants([...tenants, enrichedTenant]);
+            } else {
+                setTenants(tenants.map(t => t.id === currentTenantId ? enrichedTenant : t));
+            }
+
+            setIsTenantModalOpen(false);
+        } catch (err) {
+            alert(`Error: ${err.message}`);
+        } finally {
+            setSubmittingTenant(false);
+        }
+    };
+
+    const handleDeleteTenant = async (tenantId) => {
+        if (!window.confirm("Are you sure you want to delete this tenant?")) return;
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/admin/users/${tenantId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Failed to delete tenant");
+
+            setTenants(tenants.filter(t => t.id !== tenantId));
+        } catch (err) {
+            alert(`Error: ${err.message}`);
+        }
+    };
+
     const totalRooms = rooms.length;
     const totalBedCapacity = rooms.reduce((acc, room) => acc + Number(room.capacity || 0), 0);
     const enrolledTenants = tenants.length;
@@ -157,7 +258,6 @@ function HostelPage() {
                         <h1 className="text-2xl font-bold text-slate-900">{hostel?.name}</h1>
                         <p className="text-sm text-slate-500">{hostel?.description || "Hostel management dashboard"}</p>
                     </div>
-                    
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -180,6 +280,7 @@ function HostelPage() {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Rooms Section */}
                     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
                         <div className="flex items-center justify-between">
                             <div>
@@ -227,12 +328,19 @@ function HostelPage() {
                         )}
                     </div>
 
+                    {/* Tenants Section */}
                     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h2 className="text-lg font-bold text-slate-900">All Tenants</h2>
                                 <p className="text-xs text-slate-500">All tenants registered in this hostel</p>
                             </div>
+                            <button 
+                                onClick={handleOpenAddTenantModal}
+                                className="px-3 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+                            >
+                                + Add Tenant
+                            </button>
                         </div>
 
                         {tenants.length === 0 ? (
@@ -248,6 +356,20 @@ function HostelPage() {
                                             </span>
                                         </div>
                                         <p className="text-xs text-slate-500">{tenant.email}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => handleOpenEditTenantModal(tenant)}
+                                            className="px-3 py-1 text-xs font-medium border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 cursor-pointer"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteTenant(tenant.id)}
+                                            className="px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg cursor-pointer"
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
                                 </div>
                             ))
@@ -265,6 +387,98 @@ function HostelPage() {
                 setRoomForm={setRoomForm}
                 submitting={submitting}
             />
+
+            {/* Tenant Modal */}
+            {isTenantModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-slate-900">
+                                {tenantModalMode === 'add' ? 'Add New Tenant' : 'Edit Tenant'}
+                            </h3>
+                            <button 
+                                onClick={() => setIsTenantModalOpen(false)}
+                                className="text-slate-400 hover:text-slate-600 font-bold text-lg cursor-pointer"
+                            >
+                                &times;
+                            </button>
+                        </div>
+                        
+                        <form onSubmit={handleTenantSubmit} className="space-y-4">
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-600">Full Name</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g., John Doe" 
+                                    value={tenantForm.name}
+                                    onChange={(e) => setTenantForm({...tenantForm, name: e.target.value})}
+                                    required
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-600">Email Address</label>
+                                <input 
+                                    type="email_address" 
+                                    placeholder="e.g., john@example.com" 
+                                    value={tenantForm.email}
+                                    onChange={(e) => setTenantForm({...tenantForm, email: e.target.value})}
+                                    required
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-600">
+                                    Password {tenantModalMode === 'edit' && '(Leave blank to keep unchanged)'}
+                                </label>
+                                <input 
+                                    type="password" 
+                                    placeholder="••••••••" 
+                                    value={tenantForm.password}
+                                    onChange={(e) => setTenantForm({...tenantForm, password: e.target.value})}
+                                    {...(tenantModalMode === 'add' ? { required: true } : {})}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+                                />
+                            </div>
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-semibold text-slate-600">Assign Room</label>
+                                <select 
+                                    value={tenantForm.roomId}
+                                    onChange={(e) => setTenantForm({...tenantForm, roomId: e.target.value})}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+                                >
+                                    <option value="">-- Unassigned --</option>
+                                    {rooms.map((room) => (
+                                        <option key={room.roomId} value={room.roomId}>
+                                            {room.roomName} (Cap: {room.capacity})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsTenantModalOpen(false)}
+                                    className="px-4 py-2 text-sm font-semibold border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={submittingTenant}
+                                    className="px-4 py-2 text-sm font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 cursor-pointer disabled:opacity-50"
+                                >
+                                    {submittingTenant ? "Saving..." : tenantModalMode === 'add' ? "Add Tenant" : "Save Changes"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </div>
