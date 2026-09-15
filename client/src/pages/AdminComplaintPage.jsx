@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Footer from "../components/Footer";
 import LoggedInNavbar from "../components/LoggedInNavbar";
+import { API_URL } from "../config";
 
 function AdminComplaintPage() {
     const [complaints, setComplaints] = useState([]);
@@ -11,7 +12,7 @@ function AdminComplaintPage() {
     const handleDelete = async (complaintId) => {
         try {
             const token = localStorage.getItem("token");
-            await axios.delete(`http://localhost:8080/api/complaints/admin/${complaintId}`, {
+            await axios.delete(`${API_URL}/complaints/admin/${complaintId}`, {
                 headers: { Authorization: `Bearer ${token}` },
                 withCredentials: true
             });
@@ -27,7 +28,7 @@ function AdminComplaintPage() {
         try {
             console.log(complaintId);
             const token = localStorage.getItem("token");
-            await axios.patch(`http://localhost:8080/api/complaints/admin/${complaintId}`, 
+            await axios.patch(`${API_URL}/complaints/admin/${complaintId}`, 
                 { status: newStatus },
                 {
                     headers: { Authorization: `Bearer ${token}` },
@@ -47,7 +48,7 @@ function AdminComplaintPage() {
         const fetchComplaints = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await axios.get("http://localhost:8080/api/complaints/admin", {
+                const response = await axios.get(`${API_URL}/complaints/admin`, {
                     headers: { Authorization: `Bearer ${token}` },
                     withCredentials: true
                 });

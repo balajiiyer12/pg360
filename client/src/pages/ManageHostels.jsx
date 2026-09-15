@@ -3,6 +3,7 @@ import axios from 'axios';
 import Footer from "../components/Footer";
 import LoggedInNavbar from "../components/LoggedInNavbar";
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from "../config";
 
 function ManageHostels() {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ function ManageHostels() {
         const fetchHostels = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await axios.get("http://localhost:8080/api/admin/hostel", {
+                const response = await axios.get(`${API_URL}/admin/hostel`, {
                     headers: { Authorization: `Bearer ${token}` },
                     withCredentials: true
                 });
@@ -41,7 +42,7 @@ function ManageHostels() {
         
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.post("http://localhost:8080/api/admin/hostel", 
+            const response = await axios.post(`${API_URL}/admin/hostel`, 
                 { name: newHostel.name, description: newHostel.description },
                 {
                     headers: { Authorization: `Bearer ${token}` },
@@ -65,7 +66,7 @@ function ManageHostels() {
 
         try {
             const token = localStorage.getItem("token");
-            const response = await axios.put(`http://localhost:8080/api/admin/hostel/${editingHostel.hostelId}`, 
+            const response = await axios.put(`${API_URL}/admin/hostel/${editingHostel.hostelId}`, 
                 { name: editingHostel.name, description: editingHostel.description },
                 {
                     headers: { Authorization: `Bearer ${token}` },
@@ -89,7 +90,7 @@ function ManageHostels() {
         if (window.confirm("Are you sure you want to delete this hostel?")) {
             try {
                 const token = localStorage.getItem("token");
-                await axios.delete(`http://localhost:8080/api/admin/hostel/${hostelId}`, {
+                await axios.delete(`${API_URL}/admin/hostel/${hostelId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                     withCredentials: true
                 });

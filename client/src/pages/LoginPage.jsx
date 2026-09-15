@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -35,7 +36,7 @@ function LoginPage() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/auth/login",
+        `${API_URL}/auth/login`,
         { email, password },
         { withCredentials: true }
       );

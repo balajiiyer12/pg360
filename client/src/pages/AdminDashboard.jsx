@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useState,useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../config";
 
 function AdminDashboard() {
     const{user} = useAuth();
@@ -20,7 +21,7 @@ function AdminDashboard() {
         const fetchStats = async () => {
             try {
                 const token = localStorage.getItem("token");
-                const response = await axios.get("http://localhost:8080/api/admin/hostel/stats", {
+                const response = await axios.get(`${API_URL}/admin/hostel/stats`, {
                     headers: { Authorization: `Bearer ${token}` },
                     withCredentials: true
                 });

@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import Footer from "../components/Footer";
 import LoggedInNavbar from "../components/LoggedInNavbar.jsx"
+import { API_URL } from "../config";
 
 export default function TenantDashboard() {
     const navigate = useNavigate();
@@ -32,7 +33,7 @@ export default function TenantDashboard() {
     const fetchComplaints = async () => {
         try {
             setLoadingComplaints(true);
-            const response = await fetch('http://localhost:8080/api/complaints/tenant', {
+            const response = await fetch(`${API_URL}/complaints/tenant`, {
                 credentials: 'include'
             });
             const data = await response.json();
@@ -69,7 +70,7 @@ export default function TenantDashboard() {
 
         try {
             setSubmitting(true);
-            const response = await fetch('http://localhost:8080/api/complaints/tenant', {
+            const response = await fetch(`${API_URL}/complaints/tenant`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, description }),
@@ -94,7 +95,7 @@ export default function TenantDashboard() {
         if (!window.confirm("Are you sure you want to delete this complaint?")) return;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/complaints/tenant/${complaintId}`, {
+            const response = await fetch(`${API_URL}/complaints/tenant/${complaintId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });

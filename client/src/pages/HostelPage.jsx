@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import Footer from "../components/Footer";
 import LoggedInNavbar from "../components/LoggedInNavbar";
 import RoomModal from "../components/RoomModal";
+import { API_URL } from "../config";
 
 function HostelPage() {
     const { hostelid } = useParams();
@@ -32,9 +33,9 @@ function HostelPage() {
             try {
                 setLoading(true);
                 const [hostelRes, roomsRes, tenantsRes] = await Promise.all([
-                    fetch(`http://localhost:8080/api/admin/hostel/${hostelid}`, { credentials: 'include' }),
-                    fetch(`http://localhost:8080/api/admin/hostel/${hostelid}/room`, { credentials: 'include' }),
-                    fetch(`http://localhost:8080/api/admin/users/hostel/${hostelid}`, { credentials: 'include' })
+                    fetch(`${API_URL}/admin/hostel/${hostelid}`, { credentials: 'include' }),
+                    fetch(`${API_URL}/admin/hostel/${hostelid}/room`, { credentials: 'include' }),
+                    fetch(`${API_URL}/admin/users/hostel/${hostelid}`, { credentials: 'include' })
                 ]);
 
                 const hostelData = await hostelRes.json();
@@ -79,8 +80,8 @@ function HostelPage() {
 
         try {
             const url = modalMode === 'add' 
-                ? `http://localhost:8080/api/admin/hostel/${hostelid}/room`
-                : `http://localhost:8080/api/admin/hostel/rooms/${currentRoomId}`;
+                ? `${API_URL}/admin/hostel/${hostelid}/room`
+                : `${API_URL}/admin/hostel/rooms/${currentRoomId}`;
             
             const method = modalMode === 'add' ? 'POST' : 'PUT';
 
@@ -112,7 +113,7 @@ function HostelPage() {
         if (!window.confirm("Are you sure you want to delete this room?")) return;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/admin/hostel/rooms/${roomId}`, {
+            const response = await fetch(`${API_URL}/admin/hostel/rooms/${roomId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -152,8 +153,8 @@ function HostelPage() {
 
         try {
             const url = tenantModalMode === 'add'
-                ? `http://localhost:8080/api/admin/users`
-                : `http://localhost:8080/api/admin/users/${currentTenantId}`;
+                ? `${API_URL}/admin/users`
+                : `${API_URL}/admin/users/${currentTenantId}`;
 
             const method = tenantModalMode === 'add' ? 'POST' : 'PUT';
 
@@ -205,7 +206,7 @@ function HostelPage() {
         if (!window.confirm("Are you sure you want to delete this tenant?")) return;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/admin/users/${tenantId}`, {
+            const response = await fetch(`${API_URL}/admin/users/${tenantId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });

@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-
-const API_URL = "http://localhost:8080";
+import { API_URL } from "../config";
 
 const AuthContext = createContext(null);
 
@@ -14,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   try {
     const token = localStorage.getItem("token");
 
-    const response = await axios.get(`${API_URL}/api/auth/me`, {
+    const response = await axios.get(`${API_URL}/auth/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -37,7 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
+      await axios.post(`${API_URL}/auth/logout`, {}, { withCredentials: true });
     } catch (err) {
       console.error("Logout error:", err);
     } finally {
