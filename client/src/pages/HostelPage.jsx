@@ -20,9 +20,9 @@ function HostelPage() {
   const [registerRoomModal, setRegisterRoomModal] = useState(false);
   const [updateRoomModal, setUpdateRoomModal] = useState(false);
 
-  // Tenant Modals & Data States (Phone removed)
-  const [newTenantData, setNewTenantData] = useState({ name: "", email: "", roomId: "" });
-  const [editTenantData, setEditTenantData] = useState({ userId: "", name: "", email: "", roomId: "" });
+  // Tenant Modals & Data States (Password added to edit state as well)
+  const [newTenantData, setNewTenantData] = useState({ name: "", email: "", password: "", roomId: "" });
+  const [editTenantData, setEditTenantData] = useState({ userId: "", name: "", email: "", password: "", roomId: "" });
   const [registerTenantModal, setRegisterTenantModal] = useState(false);
   const [updateTenantModal, setUpdateTenantModal] = useState(false);
 
@@ -177,7 +177,6 @@ function HostelPage() {
   async function handleRegisterTenant(e) {
     e.preventDefault();
     try {
-      // If roomId is empty string, we can send null or empty depending on backend schema
       const payload = { 
         ...newTenantData, 
         hostelId: hostelid, 
@@ -200,7 +199,7 @@ function HostelPage() {
         window.location.reload(); 
       }
 
-      setNewTenantData({ name: "", email: "", roomId: "" });
+      setNewTenantData({ name: "", email: "", password: "", roomId: "" });
       setRegisterTenantModal(false);
     } catch (error) {
       console.error("Failed to add tenant:", error.response?.data || error.message);
@@ -212,6 +211,7 @@ function HostelPage() {
       userId: tenant.userId || tenant.id,
       name: tenant.name || tenant.username || "",
       email: tenant.email || "",
+      password: "", // Keep empty by default so it's only updated if typed
       roomId: tenant.roomId || "",
     });
     setUpdateTenantModal(true);
@@ -220,10 +220,16 @@ function HostelPage() {
   async function handleUpdateTenantSubmit(e) {
     e.preventDefault();
     try {
+      // Clean up payload: if password is left empty, omit it or send it depending on backend preference
       const payload = {
-        ...editTenantData,
-        roomId: editTenantData.roomId === "" ? null : editTenantData.roomId
+        name: editTenantData.name,
+        email: editTenantData.email,
+        roomId: editTenantData.roomId === "" ? null : editTenantData.roomId,
       };
+
+      if (editTenantData.password) {
+        payload.password = editTenantData.password;
+      }
 
       const response = await axios.put(
         `${API_URL}/admin/users/${editTenantData.userId}`,
@@ -554,6 +560,19 @@ function HostelPage() {
               </div>
 
               <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700 block">Password</label>
+                <input
+                  type="password"
+                  required
+                  name="password"
+                  value={newTenantData.password}
+                  onChange={handleTenantInputChange}
+                  placeholder="Enter a secure password"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
+                />
+              </div>
+
+              <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-slate-700 block">Assign Room</label>
                 <select
                   name="roomId"
@@ -579,7 +598,7 @@ function HostelPage() {
         </div>
       )}
 
-      {/* Edit Tenant Modal */}
+      {/* Edit Tenant Modal (Updated with Password Field) */}
       {updateTenantModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-6">
@@ -611,6 +630,18 @@ function HostelPage() {
                   value={editTenantData.email}
                   onChange={handleEditTenantInputChange}
                   placeholder="e.g. rahul@example.com"
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700 block">Password <span className="text-xs text-slate-400 font-normal">(Leave blank to keep unchanged)</span></label>
+                <input
+                  type="password"
+                  name="password"
+                  value={editTenantData.password}
+                  onChange={handleEditTenantInputChange}
+                  placeholder="Enter new password if changing"
                   className="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-sm"
                 />
               </div>

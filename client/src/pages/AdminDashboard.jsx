@@ -43,7 +43,7 @@ function AdminDashboard() {
                 {/* Welcome Section */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-                        Welcome, Balaji
+                        Welcome, {user.name}
                     </h1>
                     <p className="text-sm text-slate-500 mt-1">
                         Manage hostels, tenants, complaints and monitor platform activity.
