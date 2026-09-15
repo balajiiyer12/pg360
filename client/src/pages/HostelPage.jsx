@@ -12,6 +12,9 @@ function HostelPage() {
   const[rooms,setRooms] = useState([]);
   const [hostel,setHostel] = useState();
   const [tenants,setTenants] = useState([]);
+  const [newRoomData, setNewRoomData] = useState({});
+  const [registerRoomModal, setRegisterRoomModal] = useState(false);
+  const [updateRoomModal, setUpdateRoomModal] = useState(false);
   const [stats, setStats] = useState({
     totalRooms: 0,
     totalTenants: 0,
@@ -76,6 +79,41 @@ function HostelPage() {
     fetchStats();
   }, [hostelid,token]);
 
+  async function handleRegisterRoom(hostelid){
+    setRegisterRoomModal(true);
+    const response = await axios.post(`${API_URL}/admin/hostel/${hostelid}/room`,newRoomData,{
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true
+    })
+
+    setRegisterRoomModal(false);
+
+  }
+
+  async function handleDeleteRoom(roomid){
+    const response = await axios.delete(`${API_URL}/admin/hostel/rooms/${roomid}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true
+                });
+      const deletedRoom = response?.data?.deletedRoom;
+      const newRooms = rooms.filter((room)=>{
+        if(room!==deletedRoom){
+          return true;
+        }
+      })
+      setRooms(newRooms);
+  }
+
+  async function handleUpdateRoom(roomid){
+    setUpdateRoomModal(true);
+     const response = await axios.put(`${API_URL}/admin/hostel/rooms/${roomid}`,newRoomData,{
+                    headers: { Authorization: `Bearer ${token}` },
+                    withCredentials: true
+                });
+      const updatedRoom = response?.data?.updatedRoom;
+      setRooms([...rooms,updatedRoom]);
+      setUpdateRoomModal(false);
+  }
  
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 text-slate-800">
@@ -130,7 +168,7 @@ function HostelPage() {
               </p>
             </div>
 
-            <button className="w-full md:w-auto px-4 py-3 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors">
+            <button onClick={handleRegisterRoom} className="w-full md:w-auto px-4 py-3 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors">
               + Add Room
             </button>
           </div>
@@ -158,11 +196,11 @@ function HostelPage() {
 
           <div className="grid grid-cols-3 gap-2 w-full lg:w-auto">
 
-            <button className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">
+            <button onClick={()=>{handleUpdateRoom(room.roomId)}} className="px-3 py-2 border border-slate-300 rounded-lg text-sm font-medium hover:bg-slate-50">
               Edit
             </button>
 
-            <button className="px-3 py-2 text-red-600 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-50">
+            <button onClick={()=>{handleDeleteRoom(room.roomId)}} className="px-3 py-2 text-red-600 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-50">
               Delete
             </button>
           </div>
@@ -207,10 +245,6 @@ function HostelPage() {
                     +91 9876543210
                   </p>
                 </div>
-
-                <span className="inline-flex px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                  Active
-                </span>
               </div>
             </div>
 
