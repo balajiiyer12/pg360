@@ -41,12 +41,12 @@ function LoginPage() {
       );
 
       console.log("Login Success:", response.data);
-
+console.log(1)
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
-
-      response?.data?.user?.role==="admin"?navigate("/admin/dashboard"):navigate("/tenant/dashboard")
+      console.log(2)
+      response?.data?.user?.role==="admin" ? navigate("/admin/dashboard"):navigate("/tenant/dashboard")
     } catch (err) {
       setError(
         err.response?.data?.message || "Something went wrong! Please try again."

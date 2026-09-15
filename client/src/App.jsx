@@ -22,7 +22,9 @@ function App() {
                <Route path='/admin/complaints' element={<AdminComplaintPage/>}/>
                <Route path='/admin/hostels' element={<ManageHostels/>}/>
                <Route path='/admin/hostels/:hostelid' element={<HostelPage/>}/>
+               <Route path='/admin/hostels/:hostelid' element={<HostelPage/>}/>
             </Route>
+            
 
             <Route element={<ProtectedRoute allowedRole="tenant" />}>
                <Route path='/tenant/dashboard' element={<TenantDashboard/>}/>
