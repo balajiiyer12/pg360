@@ -42,12 +42,12 @@ function LoginPage() {
         { withCredentials: true }
       );
 
-      console.log("Login Success:", response.data);
+      console.log("Login Success:", response.data.user.role);
 console.log(1)
       if (response.data.token) {
         localStorage.setItem("token", response.data.token);
       }
-      login(response?.data?.user);
+      console.log(2);
       response?.data?.user?.role==="admin" ? navigate("/admin/dashboard"):navigate("/tenant/dashboard")
     } catch (err) {
       setError(
