@@ -1,16 +1,18 @@
+# PG 360 - Solution Design & Technical Documentation
 
-PG 360 - Solution Design & Technical Documentation
-Project Information
+## Project Information
 
-Project Name: PG 360
- Project Type: Web Application
- Developer: Balaji Iyer
- Manager: Mayank Garkoti
- Guide/Mentor: Deep Shah
- Project Nature: Individual Project
- Document Type: Solution Design & Technical Documentation
+- **Project Name:** PG 360
+- **Project Type:** Web Application
+- **Developer:** Balaji Iyer
+- **Manager:** Mayank Garkoti
+- **Guide/Mentor:** Deep Shah
+- **Project Nature:** Individual Project
+- **Document Type:** Solution Design & Technical Documentation
 
-1. Executive Summary
+---
+
+# 1. Executive Summary
 
 PG 360 is a web-based Paying Guest (PG) and Hostel Management System developed to simplify the administration of hostels and PG accommodations. The application provides a centralized platform for managing hostels, rooms, tenants, occupancy, and complaints.
 
@@ -18,149 +20,203 @@ Traditionally, PG owners maintained records manually, making it difficult to tra
 
 PG 360 digitizes these processes, enabling PG owners to efficiently manage multiple hostels while providing tenants with a platform to raise and track complaints online.
 
-2. Business Problem Statement
-Existing Challenges
+---
+
+# 2. Business Problem Statement
+
+## Existing Challenges
 
 Before PG 360:
 
-Tenant records were maintained manually.
-Room occupancy and vacancies were tracked using spreadsheets or paper records.
-Complaint management lacked visibility and traceability.
-Managing multiple hostels required significant manual effort.
-Information was scattered and difficult to maintain.
-Operational efficiency decreased as the business scaled.
-Need for the Solution
+- Tenant records were maintained manually.
+- Room occupancy and vacancies were tracked using spreadsheets or paper records.
+- Complaint management lacked visibility and traceability.
+- Managing multiple hostels required significant manual effort.
+- Information was scattered and difficult to maintain.
+- Operational efficiency decreased as the business scaled.
+
+## Need for the Solution
 
 A centralized digital solution was required to:
 
-Reduce administrative overhead.
-Improve transparency.
-Maintain accurate occupancy information.
-Enable online complaint management.
-Support management of multiple hostels.
-3. Project Objectives
-Objective 1: Reduce Manual Effort
+- Reduce administrative overhead.
+- Improve transparency.
+- Maintain accurate occupancy information.
+- Enable online complaint management.
+- Support management of multiple hostels.
+
+---
+
+# 3. Project Objectives
+
+## Objective 1: Reduce Manual Effort
 
 Digitize hostel operations and eliminate dependency on manual record keeping.
 
-Objective 2: Improve Transparency
+## Objective 2: Improve Transparency
 
 Provide visibility into occupancy, room allocation, tenant details, and complaint status.
 
-Objective 3: Centralized Hostel Management
+## Objective 3: Centralized Hostel Management
 
 Allow administrators to manage multiple hostels through a single platform.
 
-Objective 4: Improve Complaint Resolution
+## Objective 4: Improve Complaint Resolution
 
 Enable structured complaint management and status tracking.
 
-4. Scope of the Project
-In Scope
-User Authentication
-Hostel Management
-Room Management
-Tenant Management
-Tenant Assignment/De-assignment
-Complaint Management
-Occupancy Tracking
-Role-Based Access Control
-Out of Scope
-Online Payment Gateway
-KYC Verification
-Mobile Application
-Third-Party Integrations
-5. Functional Requirements
-Module 1: Authentication
-Description
+---
+
+# 4. Scope of the Project
+
+## In Scope
+
+- User Authentication
+- Hostel Management
+- Room Management
+- Tenant Management
+- Tenant Assignment / De-assignment
+- Complaint Management
+- Occupancy Tracking
+- Role-Based Access Control
+
+## Out of Scope
+
+- Online Payment Gateway
+- KYC Verification
+- Mobile Application
+- Third-Party Integrations
+
+---
+
+# 5. Functional Requirements
+
+## Module 1: Authentication
+
+### Description
 
 Provides secure access control to the platform.
 
-Features
-Login functionality
-JWT-based authentication
-Role-based authorization
-Admin-managed account creation
-No public signup access
-Module 2: Hostel Management
-Description
+### Features
+
+- Login functionality
+- JWT-based authentication
+- Role-based authorization
+- Admin-managed account creation
+- No public signup access
+
+---
+
+## Module 2: Hostel Management
+
+### Description
 
 Allows administrators to manage hostels.
 
-Functionalities
-Create Hostel
-View Hostel Details
-Update Hostel
-Delete Hostel
-Manage Multiple Hostels
-Module 3: Room Management
-Description
+### Functionalities
+
+- Create Hostel
+- View Hostel Details
+- Update Hostel
+- Delete Hostel
+- Manage Multiple Hostels
+
+---
+
+## Module 3: Room Management
+
+### Description
 
 Allows room creation and occupancy management.
 
-Functionalities
-Create Room
-View Rooms
-Edit Room Details
-Delete Room
-Set Capacity
-Set Rent
-Track Occupancy
-Module 4: Tenant Management
-Description
+### Functionalities
+
+- Create Room
+- View Rooms
+- Edit Room Details
+- Delete Room
+- Set Capacity
+- Set Rent
+- Track Occupancy
+
+---
+
+## Module 4: Tenant Management
+
+### Description
 
 Allows management of tenants and room allocation.
 
-Functionalities
-Create Tenant
-View Tenant Details
-Update Tenant Information
-Delete Tenant
-Assign Tenant to Room
-Remove Tenant From Room
-Module 5: Complaint Management
-Description
+### Functionalities
+
+- Create Tenant
+- View Tenant Details
+- Update Tenant Information
+- Delete Tenant
+- Assign Tenant to Room
+- Remove Tenant From Room
+
+---
+
+## Module 5: Complaint Management
+
+### Description
 
 Allows tenants to register complaints digitally.
 
-Functionalities
-Create Complaint
-View Complaints
-Delete Complaint
-Track Status
-Module 6: Complaint Resolution
-Description
+### Functionalities
+
+- Create Complaint
+- View Complaints
+- Delete Complaint
+- Track Status
+
+---
+
+## Module 6: Complaint Resolution
+
+### Description
 
 Allows administrators to handle complaints.
 
-Functionalities
-View Complaints
-Update Complaint Status
-Mark as Pending
-Mark as Resolved
-Delete Complaint
-6. System Architecture
-High-Level Architecture
+### Functionalities
+
+- View Complaints
+- Update Complaint Status
+- Mark as Pending
+- Mark as Resolved
+- Delete Complaint
+
+---
+
+# 6. System Architecture
+
+## High-Level Architecture
+
+```text
 +------------+
 |    User    |
 +------------+
-      |
-      V
+       |
+       V
 +----------------+
 | React Frontend |
 +----------------+
-      |
-      V
+       |
+       V
 +----------------+
 | Express Backend|
 +----------------+
-      |
-      V
+       |
+       V
 +----------------+
 | PostgreSQL DB  |
 +----------------+
+```
 
-Deployment Architecture
+## Deployment Architecture
+
+```text
 Frontend
 React + Vite
       |
@@ -178,53 +234,92 @@ PostgreSQL
       |
       V
 Neon Database
+```
 
-7. Technology Stack
-Frontend
-React JS
-Vite
-JavaScript
-Context API
-Axios
-Responsibilities
-User Interface
-State Management
-API Communication
-Route Management
-Backend
-Express JS
-Drizzle ORM
-JWT Authentication
-Cookie Parser
-CORS
-Responsibilities
-Business Logic
-API Services
-Authentication & Authorization
-Database Operations
-Database
-PostgreSQL
-Neon Database
-Cloud Platform
-Frontend Hosting
-Google Cloud Storage Bucket
-Backend Hosting
-Google Cloud Compute Engine
-8. Backend Application Design
-Backend Overview
+---
+
+# 7. Technology Stack
+
+## Frontend
+
+### Technologies
+
+- React JS
+- Vite
+- JavaScript
+- Context API
+- Axios
+
+### Responsibilities
+
+- User Interface
+- State Management
+- API Communication
+- Route Management
+
+---
+
+## Backend
+
+### Technologies
+
+- Express JS
+- Drizzle ORM
+- JWT Authentication
+- Cookie Parser
+- CORS
+
+### Responsibilities
+
+- Business Logic
+- API Services
+- Authentication & Authorization
+- Database Operations
+
+---
+
+## Database
+
+### Technologies
+
+- PostgreSQL
+- Neon Database
+
+---
+
+## Cloud Platform
+
+### Frontend Hosting
+
+- Google Cloud Storage Bucket
+
+### Backend Hosting
+
+- Google Cloud Compute Engine
+
+---
+
+# 8. Backend Application Design
+
+## Backend Overview
 
 The backend is developed using Express.js and follows a RESTful architecture.
 
-Key responsibilities include:
+### Key Responsibilities
 
-User Management
-Hostel Management
-Room Management
-Complaint Management
-Authentication
-Authorization
-Database Connectivity
-Application Startup Flow
+- User Management
+- Hostel Management
+- Room Management
+- Complaint Management
+- Authentication
+- Authorization
+- Database Connectivity
+
+---
+
+## Application Startup Flow
+
+```text
 Server Startup
       |
       V
@@ -241,184 +336,317 @@ Register Routes
       |
       V
 Start Server (Port 8080)
+```
 
-Middleware Configuration
-CORS
+---
+
+## Middleware Configuration
+
+### CORS
 
 Allows communication between frontend and backend applications.
 
-Cookie Parser
+### Cookie Parser
 
 Parses authentication cookies.
 
-Express JSON
+### Express JSON
 
 Handles incoming JSON requests.
 
-Authentication Middleware
+### Authentication Middleware
 
 Verifies JWT tokens.
 
-Authorization Middleware
+### Authorization Middleware
 
 Provides role-based access control.
 
-9. Application Route Structure
-Primary API Routes
+---
+
+# 9. Application Route Structure
+
+## Primary API Routes
+
+```text
 /api/auth
 /api/admin/users
 /api/admin/hostel
 /api/complaints/admin
 /api/complaints/tenant
+```
 
-10. Authentication Module Design
-Base Route
+---
+
+# 10. Authentication Module Design
+
+## Base Route
+
+```text
 /api/auth
+```
 
-APIs
-Login
+### APIs
+
+#### Login
+
+```http
 POST /api/auth/login
-
+```
 
 Authenticates users and issues JWT tokens.
 
-Logout
-POST /api/auth/logout
+#### Logout
 
+```http
+POST /api/auth/logout
+```
 
 Logs users out of the application.
 
-Get Logged-In User
-GET /api/auth/me
+#### Get Logged-In User
 
+```http
+GET /api/auth/me
+```
 
 Returns current authenticated user information.
 
-Create User
-POST /api/auth/signup
+#### Create User
 
+```http
+POST /api/auth/signup
+```
 
 Creates a new account.
 
-11. User Management APIs
-Base Route
+---
+
+# 11. User Management APIs
+
+## Base Route
+
+```text
 /api/admin/users
+```
 
-Access
+### Access
 
-Admin Only
+**Admin Only**
 
-Create User
+### Create User
+
+```http
 POST /api/admin/users
+```
 
-Get Hostel Tenants
+### Get Hostel Tenants
+
+```http
 GET /api/admin/users/hostel/:hostelid
+```
 
-Update User
+### Update User
+
+```http
 PUT /api/admin/users/:userid
+```
 
-Delete User
+### Delete User
+
+```http
 DELETE /api/admin/users/:userid
+```
 
-12. Hostel Management APIs
-Base Route
+---
+
+# 12. Hostel Management APIs
+
+## Base Route
+
+```text
 /api/admin/hostel
+```
 
-Access
+### Access
 
-Admin Only
+**Admin Only**
 
-Get Dashboard Statistics
+### Get Dashboard Statistics
+
+```http
 GET /api/admin/hostel/stats
+```
 
-Get All Hostels
+### Get All Hostels
+
+```http
 GET /api/admin/hostel
+```
 
-Create Hostel
+### Create Hostel
+
+```http
 POST /api/admin/hostel
+```
 
-Get Hostel By ID
+### Get Hostel By ID
+
+```http
 GET /api/admin/hostel/:hostelid
+```
 
-Update Hostel
+### Update Hostel
+
+```http
 PUT /api/admin/hostel/:hostelid
+```
 
-Delete Hostel
+### Delete Hostel
+
+```http
 DELETE /api/admin/hostel/:hostelid
+```
 
-13. Room Management APIs
-Create Room
+---
+
+# 13. Room Management APIs
+
+### Create Room
+
+```http
 POST /api/admin/hostel/:hostelid/room
+```
 
-Stores
-Room Name
-Capacity
-Rent
-Hostel Reference
-Get Rooms
+#### Stores
+
+- Room Name
+- Capacity
+- Rent
+- Hostel Reference
+
+### Get Rooms
+
+```http
 GET /api/admin/hostel/:hostelid/room
+```
 
-Update Room
+### Update Room
+
+```http
 PUT /api/admin/hostel/rooms/:roomid
+```
 
-Delete Room
+### Delete Room
+
+```http
 DELETE /api/admin/hostel/rooms/:roomid
+```
 
-14. Complaint Management APIs
-Tenant Complaint APIs
-Base Route
+---
+
+# 14. Complaint Management APIs
+
+## Tenant Complaint APIs
+
+### Base Route
+
+```text
 /api/complaints/tenant
+```
 
-Access
+### Access
 
-Tenant Only
+**Tenant Only**
 
-View My Complaints
+#### View My Complaints
+
+```http
 GET /api/complaints/tenant
+```
 
-Raise Complaint
+#### Raise Complaint
+
+```http
 POST /api/complaints/tenant
+```
 
-Delete Complaint
+#### Delete Complaint
+
+```http
 DELETE /api/complaints/tenant/:complaintid
+```
 
-Admin Complaint APIs
-Base Route
+---
+
+## Admin Complaint APIs
+
+### Base Route
+
+```text
 /api/complaints/admin
+```
 
-Access
+### Access
 
-Admin Only
+**Admin Only**
 
-View All Complaints
+#### View All Complaints
+
+```http
 GET /api/complaints/admin
+```
 
-View Hostel Complaints
+#### View Hostel Complaints
+
+```http
 GET /api/complaints/admin/hostel/:hostelid
+```
 
-Update Complaint Status
+#### Update Complaint Status
+
+```http
 PATCH /api/complaints/admin/:complaintid
+```
 
-Delete Complaint
+#### Delete Complaint
+
+```http
 DELETE /api/complaints/admin/:complaintid
+```
 
-15. Database Design
-ENUM Definitions
-User Roles
+---
+
+# 15. Database Design
+
+## ENUM Definitions
+
+### User Roles
+
+```text
 ADMIN
 TENANT
 DEFAULT
+```
 
-Complaint Status
+### Complaint Status
+
+```text
 PENDING
 RESOLVED
+```
 
-Users Table
-Purpose
+---
+
+## Users Table
+
+### Purpose
 
 Stores user and tenant information.
 
-Fields
+### Fields
+
+```text
 id
 name
 role
@@ -426,36 +654,54 @@ email
 password
 hostelId
 roomId
+```
 
-Hostels Table
-Purpose
+---
+
+## Hostels Table
+
+### Purpose
 
 Stores hostel information.
 
-Fields
+### Fields
+
+```text
 hostelId
 name
 ownerId
 description
+```
 
-Rooms Table
-Purpose
+---
+
+## Rooms Table
+
+### Purpose
 
 Stores room details.
 
-Fields
+### Fields
+
+```text
 roomId
 hostelId
 capacity
 rent
 roomName
+```
 
-Complaints Table
-Purpose
+---
+
+## Complaints Table
+
+### Purpose
 
 Stores tenant complaints.
 
-Fields
+### Fields
+
+```text
 complaintId
 authorId
 hostelId
@@ -464,8 +710,13 @@ description
 status
 createdAt
 updatedAt
+```
 
-16. Entity Relationship Diagram
+---
+
+# 16. Entity Relationship Diagram
+
+```text
 Users
   |
   | ownerId
@@ -493,65 +744,79 @@ Hostels
   | hostelId
   |
 Complaints
+```
 
-17. Security Design
-Authentication Mechanism
+---
+
+# 17. Security Design
+
+## Authentication Mechanism
 
 JWT-Based Authentication
 
-Authentication Flow
+### Authentication Flow
+
+```text
 User Login
-     |
-     V
+    |
+    V
 Credential Validation
-     |
-     V
+    |
+    V
 JWT Token Generation
-     |
-     V
+    |
+    V
 Token Issued
-     |
-     V
+    |
+    V
 Protected Resource Access
+```
 
-Authorization Mechanism
+## Authorization Mechanism
 
-Role-Based Access Control (RBAC)
+### Role-Based Access Control (RBAC)
 
-Roles
-Admin
+#### Admin Permissions
 
-Permissions:
+- Manage Hostels
+- Manage Rooms
+- Manage Tenants
+- View Complaints
+- Update Complaint Status
+- Dashboard Access
 
-Manage Hostels
-Manage Rooms
-Manage Tenants
-View Complaints
-Update Complaint Status
-Dashboard Access
-Tenant
+#### Tenant Permissions
 
-Permissions:
+- Login
+- View Assigned Information
+- Create Complaints
+- View Complaint History
 
-Login
-View Assigned Information
-Create Complaints
-View Complaint History
-Security Middleware
-protect Middleware
-JWT Validation
-User Verification
-Route Protection
-isAdmin Middleware
+---
+
+## Security Middleware
+
+### protect Middleware
+
+- JWT Validation
+- User Verification
+- Route Protection
+
+### isAdmin Middleware
 
 Restricts access to Admin-only resources.
 
-isTenant Middleware
+### isTenant Middleware
 
 Restricts access to Tenant-only resources.
 
-18. Application Workflows
-Hostel Management Workflow
+---
+
+# 18. Application Workflows
+
+## Hostel Management Workflow
+
+```text
 Admin Login
       |
       V
@@ -568,8 +833,11 @@ Assign Rooms
       |
       V
 Track Occupancy
+```
 
-Complaint Management Workflow
+## Complaint Management Workflow
+
+```text
 Tenant Login
       |
       V
@@ -584,128 +852,184 @@ Admin Reviews Complaint
       V
 Update Status
 (Pending / Resolved)
+```
 
-19. Testing Strategy
-Manual Testing
+---
+
+# 19. Testing Strategy
+
+## Manual Testing
 
 The application was manually tested throughout development.
 
-Areas Tested
-Login
-Authentication
-Hostel CRUD Operations
-Room CRUD Operations
-User CRUD Operations
-Room Assignment
-Complaint Management
-Authorization
-API Testing
-Tool Used
+### Areas Tested
 
-Postman
+- Login
+- Authentication
+- Hostel CRUD Operations
+- Room CRUD Operations
+- User CRUD Operations
+- Room Assignment
+- Complaint Management
+- Authorization
 
-Test Coverage
-Request Validation
-Response Validation
-JWT Validation
-CRUD Operations
-Error Scenarios
-Authorization Checks
-20. Deployment Strategy
-Frontend Deployment
-Platform
+---
+
+## API Testing
+
+### Tool Used
+
+**Postman**
+
+### Test Coverage
+
+- Request Validation
+- Response Validation
+- JWT Validation
+- CRUD Operations
+- Error Scenarios
+- Authorization Checks
+
+---
+
+# 20. Deployment Strategy
+
+## Frontend Deployment
+
+### Platform
 
 Google Cloud Storage Bucket
 
-Steps
-Generate Vite Production Build
-Upload Build Files
-Configure Static Hosting
-Verify Deployment
-Backend Deployment
-Platform
+### Steps
+
+1. Generate Vite Production Build
+2. Upload Build Files
+3. Configure Static Hosting
+4. Verify Deployment
+
+---
+
+## Backend Deployment
+
+### Platform
 
 Google Cloud Compute Engine
 
-Steps
-Deploy Node.js Application
-Configure Environment Variables
-Start Application Service
-Configure Networking Rules
-Database Deployment
-Platform
+### Steps
+
+1. Deploy Node.js Application
+2. Configure Environment Variables
+3. Start Application Service
+4. Configure Networking Rules
+
+---
+
+## Database Deployment
+
+### Platform
 
 Neon PostgreSQL
 
-Activities
-Database Configuration
-Schema Migration
-ORM Setup
-Connection Management
-21. Challenges Faced
-Challenge 1: Multi-Hostel Relationship Management
+### Activities
+
+- Database Configuration
+- Schema Migration
+- ORM Setup
+- Connection Management
+
+---
+
+# 21. Challenges Faced
+
+## Challenge 1: Multi-Hostel Relationship Management
 
 Managing hostels, rooms, tenants, and complaints while maintaining relational integrity.
 
-Resolution
+### Resolution
 
 Designed a normalized PostgreSQL schema using foreign key relationships and Drizzle ORM mappings.
 
-Challenge 2: Room Assignment Logic
+---
+
+## Challenge 2: Room Assignment Logic
 
 Preventing invalid room allocations and maintaining occupancy data.
 
-Resolution
+### Resolution
 
 Implemented room assignment and de-assignment workflows using relational references.
 
-Challenge 3: Secure Access Control
+---
+
+## Challenge 3: Secure Access Control
 
 Ensuring only authorized users could access sensitive resources.
 
-Resolution
+### Resolution
 
 Implemented JWT authentication along with role-based authorization middleware.
 
-22. Business Benefits
-Benefits for PG Owners
-Centralized hostel management
-Better occupancy tracking
-Reduced paperwork
-Faster complaint handling
-Easier tenant management
-Support for multiple hostels
-Benefits for Tenants
-Online complaint registration
-Complaint tracking
-Increased transparency
-Faster issue resolution
-Organizational Benefits
-Reduced operational effort
-Improved record accuracy
-Better visibility into hostel operations
-Scalable management framework
-23. Future Enhancements
-Online Payment Management
-Rent Collection
-Payment Tracking
-Receipt Generation
-Payment History
-Digital KYC Verification
-Aadhaar Verification
-Identity Document Upload
-Tenant Verification Workflow
-Analytics Dashboard
-Occupancy Reports
-Revenue Reports
-Complaint Trends
-Hostel Performance Metrics
-Notifications
-Rent Reminders
-Complaint Updates
-Check-In Alerts
-Check-Out Notifications
-24. Conclusion
+---
+
+# 22. Business Benefits
+
+## Benefits for PG Owners
+
+- Centralized hostel management
+- Better occupancy tracking
+- Reduced paperwork
+- Faster complaint handling
+- Easier tenant management
+- Support for multiple hostels
+
+### Benefits for Tenants
+
+- Online complaint registration
+- Complaint tracking
+- Increased transparency
+- Faster issue resolution
+
+### Organizational Benefits
+
+- Reduced operational effort
+- Improved record accuracy
+- Better visibility into hostel operations
+- Scalable management framework
+
+---
+
+# 23. Future Enhancements
+
+## Online Payment Management
+
+- Rent Collection
+- Payment Tracking
+- Receipt Generation
+- Payment History
+
+## Digital KYC Verification
+
+- Aadhaar Verification
+- Identity Document Upload
+- Tenant Verification Workflow
+
+## Analytics Dashboard
+
+- Occupancy Reports
+- Revenue Reports
+- Complaint Trends
+- Hostel Performance Metrics
+
+## Notifications
+
+- Rent Reminders
+- Complaint Updates
+- Check-In Alerts
+- Check-Out Notifications
+
+---
+
+# 24. Conclusion
 
 PG 360 successfully transforms manual PG and hostel management processes into a centralized digital solution. The application enables efficient management of hostels, rooms, tenants, occupancy records, and complaints through a secure, role-based web platform.
 
