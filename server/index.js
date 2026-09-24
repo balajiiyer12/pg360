@@ -10,6 +10,7 @@ import userRouter from "./routes/userRoute.js";
 import hostelRouter from "./routes/hostel_RoomRoute.js";
 import complaintAdminRouter from "./routes/complaintAdminRoute.js";
 import complaintTenantRouter from "./routes/complaintTenantRoute.js";
+import healthRouter from "./routes/hostelRouter.js"
 
 try {
   const client = await pool.connect();
@@ -27,6 +28,7 @@ try {
   app.use(cookieParser());
   app.use(express.json());
 
+  app.use("/",healthRouter);
   app.use("/api/auth",authRouter);
   app.use("/api/admin/users",protect,isAdmin,userRouter);
   app.use("/api/admin/hostel",protect,isAdmin,hostelRouter);
