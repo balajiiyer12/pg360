@@ -10,7 +10,7 @@ import userRouter from "./routes/userRoute.js";
 import hostelRouter from "./routes/hostel_RoomRoute.js";
 import complaintAdminRouter from "./routes/complaintAdminRoute.js";
 import complaintTenantRouter from "./routes/complaintTenantRoute.js";
-import healthRouter from "./routes/hostelRouter.js"
+import healthRouter from "./routes/healthRoute.js"
 
 try {
   const client = await pool.connect();
