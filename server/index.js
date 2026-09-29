@@ -21,7 +21,7 @@ try {
 
   app.use(
     cors({
-      origin: ["http://storage.googleapis.com"] ,
+      origin: true , // Bar Bar Different Cloud Platform k liye iska nayi image banani pd rhi hai isliye allow kr diya sbhi ko
       credentials: true,
     })
   );
