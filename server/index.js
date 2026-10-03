@@ -19,9 +19,9 @@ try {
 
   const app = express();
 
-  app.use(
+app.use(
     cors({
-      origin: true , // Bar Bar Different Cloud Platform k liye iska nayi image banani pd rhi hai isliye allow kr diya sbhi ko
+      origin: "https://storage.googleapis.com", 
       credentials: true,
     })
   );
