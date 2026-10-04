@@ -21,6 +21,10 @@ on:
           - small
           - medium
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -31,7 +35,8 @@ jobs:
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+        workload_identity_provider: 'projects/901253676251/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+        service_account: 'b-466-375@pg360-508113.iam.gserviceaccount.com'
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
@@ -46,7 +51,6 @@ jobs:
 
     - name: Sync Frontend to Storage Bucket
       run: |
-        # Sync your built frontend assets to the dynamic bucket created by Terraform
         REGION="${{ github.event.inputs.region_selection }}"
         gsutil rsync -R ./frontend gs://frontend-bucket-${REGION}-v2 || true
 
@@ -55,7 +59,6 @@ jobs:
         REGION="${{ github.event.inputs.region_selection }}"
         gcloud container clusters get-credentials gke-primary-${REGION} --region us-central1
         
-        # Inject secrets securely and apply deployment
         kubectl create secret generic app-secrets \
           --from-literal=DATABASE_URL="${{ secrets.DATABASE_URL }}" \
           --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
