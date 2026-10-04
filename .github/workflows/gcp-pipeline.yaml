@@ -1,0 +1,64 @@
+name: Deploy GCP Infrastructure and App
+
+on:
+  workflow_dispatch:
+    inputs:
+      region_selection:
+        description: 'Region (us, eu, or ap)'
+        required: true
+        default: 'us'
+        type: choice
+        options:
+          - us
+          - eu
+          - ap
+      tier_selection:
+        description: 'Machine Tier (small or medium)'
+        required: true
+        default: 'small'
+        type: choice
+        options:
+          - small
+          - medium
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init & Apply
+      run: |
+        cd terraform
+        terraform init
+        terraform apply -auto-approve \
+          -var="region_selection=${{ github.event.inputs.region_selection }}" \
+          -var="tier_selection=${{ github.event.inputs.tier_selection }}"
+
+    - name: Sync Frontend to Storage Bucket
+      run: |
+        # Sync your built frontend assets to the dynamic bucket created by Terraform
+        REGION="${{ github.event.inputs.region_selection }}"
+        gsutil rsync -R ./frontend gs://frontend-bucket-${REGION}-v2 || true
+
+    - name: Get GKE Credentials & Deploy App
+      run: |
+        REGION="${{ github.event.inputs.region_selection }}"
+        gcloud container clusters get-credentials gke-primary-${REGION} --region us-central1
+        
+        # Inject secrets securely and apply deployment
+        kubectl create secret generic app-secrets \
+          --from-literal=DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+          --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+          --dry-run=client -o yaml | kubectl apply -f -
+        
+        kubectl apply -f k8s/deploy.yaml
