@@ -49,3 +49,24 @@ resource "google_sql_database_instance" "postgres" {
     tier = "db-f1-micro"
   }
 }
+
+#5
+resource "google_gke_hub_membership" "primary" {
+  membership_id = "gke-primary-membership"
+
+  endpoint {
+    gke_cluster {
+      resource_link = "//container.googleapis.com/${google_container_cluster.gke_primary.id}"
+    }
+  }
+}
+
+resource "google_gke_hub_membership" "secondary" {
+  membership_id = "gke-secondary-membership"
+
+  endpoint {
+    gke_cluster {
+      resource_link = "//container.googleapis.com/${google_container_cluster.gke_secondary.id}"
+    }
+  }
+}
