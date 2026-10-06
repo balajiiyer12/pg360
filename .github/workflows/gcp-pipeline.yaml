@@ -3,17 +3,34 @@ name: Deploy GCP Infrastructure and App
 on:
   workflow_dispatch:
     inputs:
-      region_selection:
-        description: 'Region (us, eu, or ap)'
+      primary_region:
+        description: 'Primary GCP Region'
         required: true
-        default: 'us'
+        default: 'us-central1'
         type: choice
         options:
-          - us
-          - eu
-          - ap
+          - us-central1
+          - us-east1
+          - europe-west1
+          - europe-west2
+          - asia-south1
+          - asia-southeast1
+
+      secondary_region:
+        description: 'Secondary GCP Region'
+        required: true
+        default: 'us-east1'
+        type: choice
+        options:
+          - us-central1
+          - us-east1
+          - europe-west1
+          - europe-west2
+          - asia-south1
+          - asia-southeast1
+
       tier_selection:
-        description: 'Machine Tier (small or medium)'
+        description: 'Machine Tier'
         required: true
         default: 'small'
         type: choice
@@ -28,40 +45,82 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        workload_identity_provider: 'projects/901253676251/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
-        service_account: 'b-466-375@pg360-508113.iam.gserviceaccount.com'
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/901253676251/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: b-466-375@pg360-508113.iam.gserviceaccount.com
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
+      - name: Setup GCloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
-    - name: Terraform Init & Apply
-      run: |
-        cd terraform
-        terraform init
-        terraform apply -auto-approve \
-          -var="region_selection=${{ github.event.inputs.region_selection }}" \
-          -var="tier_selection=${{ github.event.inputs.tier_selection }}"
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-    - name: Sync Frontend to Storage Bucket
-      run: |
-        REGION="${{ github.event.inputs.region_selection }}"
-        gsutil rsync -R ./frontend gs://frontend-bucket-${REGION}-v2 || true
+      - name: Terraform Init & Apply
+        run: |
+          cd terraform
 
-    - name: Get GKE Credentials & Deploy App
-      run: |
-        REGION="${{ github.event.inputs.region_selection }}"
-        gcloud container clusters get-credentials gke-primary-${REGION} --region us-central1
-        
-        kubectl create secret generic app-secrets \
-          --from-literal=DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-          --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-          --dry-run=client -o yaml | kubectl apply -f -
-        
-        kubectl apply -f k8s/deploy.yaml
+          terraform init
+
+          terraform apply -auto-approve \
+            -var="primary_region=${{ github.event.inputs.primary_region }}" \
+            -var="secondary_region=${{ github.event.inputs.secondary_region }}" \
+            -var="tier_selection=${{ github.event.inputs.tier_selection }}"
+
+      - name: Build Frontend
+        run: |
+          cd client
+          npm ci
+          npm run build
+
+      - name: Upload Frontend To Bucket
+        run: |
+          gsutil rsync -R ./client/dist gs://my-frontend-bucket-us-central1-v2
+
+      - name: Deploy to Primary Cluster
+        run: |
+          gcloud container clusters get-credentials gke-primary \
+            --region "${{ github.event.inputs.primary_region }}"
+
+          kubectl create secret generic app-secrets \
+            --from-literal=DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl apply -f k8s/deploy.yaml
+          kubectl apply -f k8s/mcs.yaml
+          kubectl apply -f k8s/mci.yaml
+
+      - name: Deploy to Secondary Cluster
+        run: |
+          gcloud container clusters get-credentials gke-secondary \
+            --region "${{ github.event.inputs.secondary_region }}"
+
+          kubectl create secret generic app-secrets \
+            --from-literal=DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            --from-literal=JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          kubectl apply -f k8s/deploy.yaml
+          kubectl apply -f k8s/mcs.yaml
+
+      - name: Verify MCS
+        run: |
+          gcloud container clusters get-credentials gke-primary \
+            --region "${{ github.event.inputs.primary_region }}"
+
+          kubectl get serviceexports || true
+          kubectl get serviceimports || true
+
+      - name: Verify MCI
+        run: |
+          gcloud container clusters get-credentials gke-primary \
+            --region "${{ github.event.inputs.primary_region }}"
+
+          kubectl get multiclusteringress || true
